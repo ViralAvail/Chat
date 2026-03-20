@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Direct Messages</title>
+  
+  <!-- Fallback CDN for Tailwind to bypass ISP blocks -->
+  <script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-gray-100 dark:bg-[#0f1115] transition-colors duration-300 antialiased text-gray-900 dark:text-gray-100 overflow-hidden">
+  <div id="root"></div>
+
+  <!-- Firebase Setup -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBh-63U8Zmi9IrCH17q_Lym31W4Dl4nHNU",
+      authDomain: "myorifatechat.firebaseapp.com",
+      projectId: "myorifatechat",
+      storageBucket: "myorifatechat.firebasestorage.app",
+      messagingSenderId: "514262745271",
+      appId: "1:514262745271:web:0f7c45f38e68279b390d32"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.Firebase = { db: getFirestore(app), auth: getAuth(app), collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, query, orderBy, signInAnonymously, onAuthStateChanged };
+  </script>
+
+  <!-- React App -->
+  <script type="text/babel" data-type="module" src="script.js"></script>
+</body>
+</html>
