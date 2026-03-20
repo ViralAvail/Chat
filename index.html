@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -139,11 +138,10 @@
       const [replyingTo, setReplyingTo] = useState(null);
       const [editingMsg, setEditingMsg] = useState(null);
       const [activeMenu, setActiveMenu] = useState(null);
-      
       const [pendingImages, setPendingImages] = useState([]);
       
-      const [showSettings, setShowSettings] = useState(false);
-      const [showProfile, setShowProfile] = useState(false);
+      // NEW ROBUST MODAL STATE MANAGER
+      const [activeModal, setActiveModal] = useState(null); // 'settings', 'profile', 'image', null
       const [viewingImage, setViewingImage] = useState(null);
       
       const [showEmojis, setShowEmojis] = useState(false);
@@ -174,30 +172,57 @@
       const partnerName = nickname.trim() !== '' ? nickname : defaultPartner;
       const avatarColor = partnerName === 'Brahmgeet' || partnerName.toLowerCase().includes('brahm') ? 'bg-pink-500' : 'bg-blue-500';
 
-      // --- NEW: BACK BUTTON & HARDWARE HASH MANAGER ---
+      // --- 1. NEW BULLETPROOF HISTORY API MANAGER ---
       useEffect(() => {
-        const handleHashChange = () => {
-          const hash = window.location.hash;
-          if (hash !== '#settings') setShowSettings(false);
-          if (hash !== '#profile') setShowProfile(false);
-          if (hash !== '#image') setViewingImage(null);
-        };
-
-        window.addEventListener('hashchange', handleHashChange);
-        
-        // Remove hash automatically if the app is reloaded to prevent starting in a stuck state
-        if (window.location.hash) {
-          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        // Enforce base state on load so it doesn't get confused by old ghost states
+        if (!window.history.state || !window.history.state.modal) {
+          window.history.replaceState({ modal: null }, '');
         }
 
-        return () => window.removeEventListener('hashchange', handleHashChange);
+        const handlePopState = (e) => {
+          const state = e.state;
+          if (state && state.modal) {
+            setActiveModal(state.modal);
+          } else {
+            // Hardware Back button pressed returning to root chat
+            setActiveModal(null);
+            setViewingImage(null);
+            setShowEmojis(false);
+            setShowGifs(false);
+            setActiveMenu(null);
+          }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
       }, []);
 
-      // Handlers that safely pop history if the hash matches, otherwise just close.
-      const closeSettings = () => window.location.hash === '#settings' ? window.history.back() : setShowSettings(false);
-      const closeProfile = () => window.location.hash === '#profile' ? window.history.back() : setShowProfile(false);
-      const closeImage = () => window.location.hash === '#image' ? window.history.back() : setViewingImage(null);
-      // ------------------------------------------------
+      const openSettings = () => {
+        window.history.pushState({ modal: 'settings' }, '');
+        setActiveModal('settings');
+      };
+
+      const openProfile = () => {
+        window.history.pushState({ modal: 'profile' }, '');
+        setActiveModal('profile');
+      };
+
+      const openImage = (img) => {
+        window.history.pushState({ modal: 'image' }, '');
+        setViewingImage(img);
+        setActiveModal('image');
+      };
+
+      // Guaranteed history cleaner when UI back buttons are clicked
+      const closeCurrentModal = () => {
+        setActiveModal(null);
+        setViewingImage(null);
+        // Only pop the history if we know we pushed one! Prevents closing the app.
+        if (window.history.state && window.history.state.modal) {
+          window.history.back();
+        }
+      };
+      // ----------------------------------------------
 
       // SECURE AUTHENTICATION
       useEffect(() => {
@@ -316,7 +341,6 @@
       // SEND LOGIC
       const sendPayload = async ({ text = null, image = null, audio = null }) => {
         const finalText = text !== null ? text : input.trim();
-        
         const imgsToSave = image ? [image] : [...pendingImages];
         
         if (!finalText && imgsToSave.length === 0 && !audio) return;
@@ -331,23 +355,12 @@
           return;
         }
 
-        const payload = {
-          id: Date.now().toString(),
-          sender: user,
-          timestamp: new Date().toISOString(),
-          status: 'sent',
-          reactions: []
-        };
+        const payload = { id: Date.now().toString(), sender: user, timestamp: new Date().toISOString(), status: 'sent', reactions: [] };
 
         if (finalText) payload.text = finalText;
         if (audio) payload.audio = audio;
-        
-        if (imgsToSave.length === 1) {
-          payload.image = imgsToSave[0];
-        } else if (imgsToSave.length > 1) {
-          payload.images = imgsToSave;
-        }
-
+        if (imgsToSave.length === 1) payload.image = imgsToSave[0];
+        else if (imgsToSave.length > 1) payload.images = imgsToSave;
         if (replyingTo) { payload.replyTo = { sender: replyingTo.sender, text: replyingTo.text || 'Attachment' }; setReplyingTo(null); }
 
         await window.Firebase.setDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', payload.id), payload);
@@ -358,10 +371,7 @@
           let content = finalText || (imgsToSave.length > 0 ? `[${imgsToSave.length} Image(s)]` : "");
           if (payload.replyTo) content = `> **Replying to ${payload.replyTo.sender}:** *${payload.replyTo.text}*\n\n${content}`;
           const body = { username: user, content };
-          
-          if (imgsToSave.length > 0) {
-             body.embeds = imgsToSave.slice(0, 10).map(img => ({ image: { url: img } }));
-          }
+          if (imgsToSave.length > 0) body.embeds = imgsToSave.slice(0, 10).map(img => ({ image: { url: img } }));
           fetch(hook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(()=>{});
         }
       };
@@ -383,7 +393,6 @@
         }
         
         setPendingImages(prev => [...prev, ...compressedImgs]);
-        e.target.value = '';
       };
 
       const handleReaction = async (id, emoji, curr = []) => {
@@ -397,7 +406,7 @@
       const clearHistory = async () => {
         if (confirm("Delete chat history globally?")) {
           messages.forEach(m => window.Firebase.deleteDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', m.id)).catch(()=>{}));
-          closeSettings();
+          closeCurrentModal();
         }
       };
 
@@ -439,22 +448,22 @@
         <div className="flex flex-col h-[100dvh] w-full sm:max-w-2xl lg:max-w-4xl mx-auto bg-white dark:bg-[#0f1115] sm:border-x border-gray-200 dark:border-gray-800 relative shadow-2xl overflow-hidden" onClick={() => { setActiveMenu(null); setShowEmojis(false); setShowGifs(false); }}>
           
           {/* IMAGE PREVIEW MODAL */}
-          {viewingImage && (
-            <div className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={closeImage}>
-              <button className="absolute top-6 right-6 w-10 h-10 bg-white/20 rounded-full text-white" onClick={(e) => { e.stopPropagation(); closeImage(); }}><i className="fa-solid fa-xmark"></i></button>
+          {activeModal === 'image' && viewingImage && (
+            <div className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={closeCurrentModal}>
+              <button className="absolute top-6 right-6 w-10 h-10 bg-white/20 rounded-full text-white" onClick={(e) => { e.stopPropagation(); closeCurrentModal(); }}><i className="fa-solid fa-xmark"></i></button>
               <img src={viewingImage} className="max-w-full max-h-[85vh] rounded-lg object-contain" onClick={e=>e.stopPropagation()} />
             </div>
           )}
 
-          {/* ADDED onClick clear logic to files to ensure selecting the same image twice fires onChange */}
-          <input type="file" ref={fileRef} onChange={handleFile} onClick={(e) => e.target.value = null} accept="image/*" multiple className="hidden" />
-          <input type="file" ref={camRef} onChange={handleFile} onClick={(e) => e.target.value = null} accept="image/*" capture="environment" className="hidden" />
+          {/* HIDDEN FILE INPUTS (added proper value clearing to stop OS freeze) */}
+          <input type="file" ref={fileRef} onChange={handleFile} onClick={(e) => { e.target.value = null; }} accept="image/*" multiple className="hidden" />
+          <input type="file" ref={camRef} onChange={handleFile} onClick={(e) => { e.target.value = null; }} accept="image/*" capture="environment" className="hidden" />
 
           {/* SETTINGS MENU */}
-          {showSettings && (
+          {activeModal === 'settings' && (
             <div className="absolute inset-0 z-50 bg-white dark:bg-[#1a1d24] flex flex-col animate-slide-in-right" onClick={e=>e.stopPropagation()}>
               <div className="flex items-center px-4 py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1d24]">
-                <button onClick={closeSettings} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mr-4"><i className="fa-solid fa-arrow-left"></i></button>
+                <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mr-4"><i className="fa-solid fa-arrow-left"></i></button>
                 <h2 className="font-bold text-lg text-gray-900 dark:text-white">Settings</h2>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50 dark:bg-[#0f1115]">
@@ -496,7 +505,7 @@
                     <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/20 flex items-center justify-center"><i className="fa-solid fa-trash"></i></div>
                     <div><div className="text-sm">Clear Chat History</div><div className="text-[10px] font-normal opacity-80">Deletes globally for both</div></div>
                   </button>
-                  <button onClick={() => { setUser(null); localStorage.removeItem('chat_user'); closeSettings(); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold text-left">
+                  <button onClick={() => { setUser(null); localStorage.removeItem('chat_user'); closeCurrentModal(); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold text-left">
                     <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center"><i className="fa-solid fa-right-from-bracket"></i></div>
                     <div className="text-sm">Logout</div>
                   </button>
@@ -506,10 +515,10 @@
           )}
 
           {/* PROFILE VIEWER */}
-          {showProfile && (
+          {activeModal === 'profile' && (
             <div className="absolute inset-0 z-40 bg-white dark:bg-[#1a1d24] flex flex-col animate-slide-in-right" onClick={e=>e.stopPropagation()}>
               <div className="flex items-center px-4 py-4 border-b border-gray-100 dark:border-gray-800">
-                <button onClick={closeProfile} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mr-4"><i className="fa-solid fa-arrow-left"></i></button>
+                <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mr-4"><i className="fa-solid fa-arrow-left"></i></button>
                 <h2 className="font-bold text-lg text-gray-900 dark:text-white">Profile</h2>
               </div>
               <div className="flex flex-col items-center justify-center p-12 bg-gray-50 dark:bg-[#0f1115] flex-1">
@@ -522,14 +531,14 @@
 
           {/* HEADER */}
           <header className="flex items-center justify-between px-4 py-2.5 bg-white/90 dark:bg-[#1a1d24]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-20 shrink-0">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setShowProfile(true); window.location.hash = 'profile'; }}>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={openProfile}>
               <Avatar name={partnerName} isOnline={partnerStatus.online && Date.now() - partnerStatus.lastActive < 60000} size="md" colorClass={avatarColor} />
               <div className="flex flex-col">
                 <span className="font-bold text-[16px] text-gray-900 dark:text-white leading-tight">{partnerName}</span>
                 <span className={`text-[12px] font-semibold leading-tight ${statusText === 'Online' || statusText === 'Typing...' ? 'text-blue-500 animate-pulse' : 'text-gray-500'}`}>{statusText}</span>
               </div>
             </div>
-            <button onClick={() => { setShowSettings(true); window.location.hash = 'settings'; }} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i className="fa-solid fa-gear text-lg"></i></button>
+            <button onClick={openSettings} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i className="fa-solid fa-gear text-lg"></i></button>
           </header>
 
           {/* CHAT FEED */}
@@ -591,7 +600,7 @@
 
                       {/* Legacy Single Image Support */}
                       {msg.image && !msg.images && (
-                        <div className="cursor-zoom-in relative group/img" onClick={() => { setViewingImage(msg.image); window.location.hash = 'image'; }}>
+                        <div className="cursor-zoom-in relative group/img" onClick={() => openImage(msg.image)}>
                           <img src={msg.image} className={`max-w-full rounded-[10px] object-cover ${msg.text ? 'mb-1.5' : ''}`} style={{ maxHeight: '280px', minHeight: '100px' }} loading="lazy" />
                           <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors rounded-[10px] flex items-center justify-center"><i className="fa-solid fa-expand text-white text-2xl opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-md"></i></div>
                         </div>
@@ -601,7 +610,7 @@
                       {msg.images && msg.images.length > 0 && (
                         <div className={`grid gap-1 ${msg.text ? 'mb-1.5' : ''} ${msg.images.length >= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                            {msg.images.map((img, idx) => (
-                             <div key={idx} className={`cursor-zoom-in relative group/img ${msg.images.length === 3 && idx === 0 ? 'col-span-2' : ''}`} onClick={() => { setViewingImage(img); window.location.hash = 'image'; }}>
+                             <div key={idx} className={`cursor-zoom-in relative group/img ${msg.images.length === 3 && idx === 0 ? 'col-span-2' : ''}`} onClick={() => openImage(img)}>
                                <img src={img} className="w-full rounded-[6px] object-cover" style={{ aspectRatio: msg.images.length === 1 ? 'auto' : '1', maxHeight: msg.images.length === 1 ? '280px' : 'auto', minHeight: '100px' }} loading="lazy" />
                                <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors rounded-[6px] flex items-center justify-center"><i className="fa-solid fa-expand text-white text-xl opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-md"></i></div>
                              </div>
@@ -758,4 +767,5 @@
   </script>
 </body>
 </html>
+
 
