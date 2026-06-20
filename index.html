@@ -71,6 +71,10 @@
 
     /* Canvas Drawing Area Fix for Mobile */
     .draw-canvas { touch-action: none; background-color: #1c1c1e; }
+    
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .pb-safe { padding-bottom: max(10px, env(safe-area-inset-bottom)) !important; }
+    }
   </style>
 </head>
 <body class="text-gray-900 dark:text-gray-100 overflow-hidden font-sans antialiased selection:bg-blue-500/30 bg-[#f0f2f5] dark:bg-[#0a0a0c]">
@@ -1043,7 +1047,7 @@
                 </div>
               )}
 
-              <div className={`flex-1 flex items-end rounded-[20px] transition-colors border ${isDark ? 'bg-[#1c1c1e] border-[#1c1c1e]' : 'bg-white border-gray-200'}`}>
+              <div className={`flex-1 min-w-0 flex items-end rounded-[20px] transition-colors border ${isDark ? 'bg-[#1c1c1e] border-[#1c1c1e]' : 'bg-white border-gray-200'}`}>
                 {isRecording ? (
                   <div className="flex-1 h-10 flex items-center justify-between px-4">
                     <div className="flex items-center gap-2">
@@ -1093,7 +1097,7 @@
                 ) : isRecording ? (
                   <button type="button" onClick={stopVoice} className="w-9 h-9 flex items-center justify-center bg-blue-500 text-white rounded-full transition-transform hover:scale-110"><i className="fa-solid fa-arrow-up text-sm"></i></button>
                 ) : (
-                  <button type="button" onClick={(e) => sendPayload({})} className={`w-9 h-9 flex items-center justify-center rounded-full transition-transform hover:scale-110 text-white ${editingMsg ? 'bg-green-500' : `bg-${chatColor}-500`}`}>
+                  <button type="button" onClick={(e) => sendPayload({})} className={`w-9 h-9 flex items-center justify-center rounded-full transition-transform hover:scale-110 text-white ${editingMsg ? 'bg-green-500' : (THEMES.colors.find(c => c.value === chatColor)?.class || 'bg-blue-500')}`}>
                     {editingMsg ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-arrow-up text-sm"></i>}
                   </button>
                 )}
