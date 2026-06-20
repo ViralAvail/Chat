@@ -3,46 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Direct Messages</title>
+  <title>Premium Messenger V3</title>
   
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { animation: { 'fade-in': 'fadeIn 0.2s ease-out forwards', 'slide-up': 'slideUp 0.2s ease-out forwards', 'slide-in-right': 'slideInRight 0.3s ease-out forwards' }, keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }, slideInRight: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(0)' } } } } }
+      theme: { 
+        extend: { 
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            ios: { light: '#f4f4f5', dark: '#000000', grayL: '#e9e9eb', grayD: '#262629', blue: '#0a84ff' }
+          },
+          animation: { 
+            'fade-in': 'fadeIn 0.2s ease-out forwards', 
+            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards', 
+            'slide-right': 'slideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'drawer-up': 'drawerUp 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards',
+            'toast-drop': 'toastDrop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+          }, 
+          keyframes: { 
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, 
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }, 
+            slideRight: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(0)' } },
+            drawerUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } },
+            toastDrop: { '0%': { opacity: '0', transform: 'translateY(-20px) scale(0.95)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } }
+          } 
+        } 
+      }
     }
   </script>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
+
+  <!-- FIREBASE 9.23.0: Safe Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <style>
-    body, html { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
-    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    body, html { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; background-color: #000; touch-action: pan-x pan-y; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 10px; }
     textarea { scrollbar-width: none; resize: none; }
     textarea::-webkit-scrollbar { display: none; }
     
-    .bg-paper-doodle { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
-    .bg-paper-grid { background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm20 20h20v20H20V20zM0 20h20v20H0V20z' fill='%239C92AC' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E"); }
-    .bg-paper-stars { background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    .glass-header { background: rgba(244, 244, 245, 0.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .dark .glass-header { background: rgba(0, 0, 0, 0.75); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    
+    .glass-footer { background: rgba(244, 244, 245, 0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-top: 1px solid rgba(0,0,0,0.05); }
+    .dark .glass-footer { background: rgba(0, 0, 0, 0.85); border-top: 1px solid rgba(255,255,255,0.08); }
     
     @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); } 70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
     .recording-pulse { animation: pulse-ring 1.5s infinite; }
+    
+    .drag-handle { width: 40px; height: 4px; background-color: #cbd5e1; border-radius: 4px; margin: 8px auto 16px auto; }
+    .dark .drag-handle { background-color: #334155; }
+
+    /* Canvas Drawing Area Fix for Mobile */
+    .draw-canvas { touch-action: none; background-color: #1c1c1e; }
   </style>
 </head>
-<body class="bg-gray-100 dark:bg-[#0f1115] transition-colors duration-300 antialiased text-gray-900 dark:text-gray-100 overflow-hidden">
+<body class="text-gray-900 dark:text-gray-100 overflow-hidden font-sans antialiased selection:bg-blue-500/30 bg-ios-light dark:bg-ios-dark">
+  
+  <script>
+    window.safeStorage = {
+      get: (key) => { try { return localStorage.getItem(key); } catch(e) { return null; } },
+      set: (key, val) => { try { localStorage.setItem(key, val); } catch(e) {} },
+      rem: (key) => { try { localStorage.removeItem(key); } catch(e) {} }
+    };
+  </script>
+
+  <!-- DIAGNOSTIC LOGGER: Kept for safety -->
+  <div id="error-log" style="color: white; background: #e3342f; z-index: 99999; position: absolute; top:0; left:0; width: 100%; display: none; padding: 16px; font-family: monospace; font-size: 12px; font-weight: bold;"></div>
+  <script>
+    window.onerror = function(msg, url, line) {
+      document.getElementById('error-log').style.display = 'block';
+      document.getElementById('error-log').innerHTML += 'CRASH: ' + msg + ' (Line: ' + line + ')<br>';
+      return false;
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      document.getElementById('error-log').style.display = 'block';
+      document.getElementById('error-log').innerHTML += 'PROMISE CRASH: ' + (event.reason ? event.reason.message || event.reason : 'Unknown') + '<br>';
+    });
+  </script>
+
   <div id="root"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBh-63U8Zmi9IrCH17q_Lym31W4Dl4nHNU",
       authDomain: "myorifatechat.firebaseapp.com",
@@ -52,19 +109,55 @@
       appId: "1:514262745271:web:0f7c45f38e68279b390d32"
     };
 
-    const app = initializeApp(firebaseConfig);
-    window.Firebase = { db: getFirestore(app), auth: getAuth(app), collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, signInAnonymously, onAuthStateChanged };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(() => {});
+
+    window.Firebase = {
+      db, auth,
+      collection: (database, ...path) => ({ type: 'collection', path }),
+      doc: (database, ...path) => ({ type: 'doc', path }),
+      setDoc: async (docRef, data, options) => { const p = docRef.path.join('/'); return options?.merge ? db.doc(p).set(data, { merge: true }) : db.doc(p).set(data); },
+      updateDoc: async (docRef, data) => { const p = docRef.path.join('/'); return db.doc(p).update(data); },
+      deleteDoc: async (docRef) => { const p = docRef.path.join('/'); return db.doc(p).delete(); },
+      onSnapshot: (ref, onSuccess, onError) => {
+        const p = ref.path.join('/');
+        if (ref.type === 'collection') return db.collection(p).onSnapshot(onSuccess, onError);
+        return db.doc(p).onSnapshot(docSnap => onSuccess({ id: docSnap.id, exists: () => docSnap.exists, data: () => docSnap.data() }), onError);
+      },
+      signInAnonymously: async () => auth.signInAnonymously(),
+      onAuthStateChanged: (callback) => auth.onAuthStateChanged(callback)
+    };
   </script>
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+  <script type="text/babel" data-presets="react,env">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    class ErrorBoundary extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, errorInfo: '' };
+      }
+      static getDerivedStateFromError(error) {
+        return { hasError: true, errorInfo: error.toString() };
+      }
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div style={{ padding: '20px', color: 'white', backgroundColor: '#e3342f', height: '100vh', width: '100vw', wordBreak: 'break-all', zIndex: 9999 }}>
+              <h1 style={{fontSize: '24px', fontWeight:'bold', marginBottom:'10px'}}>App Crashed!</h1>
+              <p>Take a screenshot of this error and show it to the developer:</p>
+              <br/>
+              <code style={{fontSize: '12px'}}>{this.state.errorInfo}</code>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
 
     const APP_ID = 'daksh-brahmgeet-ultimate-v2';
-    const WEBHOOKS = {
-      Daksh: "https://discord.com/api/webhooks/1484129273173381130/Nl0nlQlzK9HlU_t1jgW_tyqvQYIWmC2l-1fOmUfIAQxOK4c4DpZhCZQIxg4qp-PHe5fN",
-      Brahmgeet: "https://discord.com/api/webhooks/1484129276109262909/oIAQEcDMz1ahh4mfT5oaIzbchnXKlpLgoWcJGQ7L-3zLSayINLWVQfKWRApxn4dXh8Wz"
-    };
-
     const EMOJIS = {
       common: ["😂", "❤️", "😍", "😭", "😊", "🥺", "💀", "🔥", "🥰", "✨", "👍", "🙏", "👀", "💯", "💕", "🤭", "🤣", "😘", "😜", "😎", "🤩", "🥳", "😏", "🙄", "😴", "🤯"],
       quick: ["❤️", "😂", "😮", "😢", "🙏", "👍"]
@@ -72,22 +165,20 @@
     
     const THEMES = {
       colors: [
-        { name: 'Blue', class: 'bg-blue-500', value: 'blue' }, { name: 'Purple', class: 'bg-purple-500', value: 'purple' },
-        { name: 'Pink', class: 'bg-pink-500', value: 'pink' }, { name: 'Rose', class: 'bg-rose-500', value: 'rose' },
-        { name: 'Emerald', class: 'bg-emerald-500', value: 'emerald' }, { name: 'Dark', class: 'bg-gray-800', value: 'gray' }
-      ],
-      wallpapers: [
-        { name: 'Clean', class: '' }, { name: 'Grid', class: 'bg-paper-grid' }, { name: 'Doodle', class: 'bg-paper-doodle' }, { name: 'Stars', class: 'bg-paper-stars' }
+        { name: 'Blue', class: 'bg-blue-500', value: 'blue' }, 
+        { name: 'Purple', class: 'bg-purple-500', value: 'purple' },
+        { name: 'Pink', class: 'bg-pink-500', value: 'pink' }, 
+        { name: 'Rose', class: 'bg-rose-500', value: 'rose' },
+        { name: 'Emerald', class: 'bg-emerald-500', value: 'emerald' }, 
+        { name: 'Dark', class: 'bg-gray-800', value: 'gray' }
       ]
     };
 
-    const formatTime = (iso) => {
-      try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } 
-      catch(e) { return ""; }
-    };
-    
+    const DRAW_COLORS = ['#ffffff', '#000000', '#ff3b30', '#ff9500', '#34c759', '#007aff', '#af52de'];
+    const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+
+    const formatTime = (iso) => { try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch(e) { return ""; } };
     const isSameDay = (d1, d2) => { const a=new Date(d1),b=new Date(d2); return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); };
-    
     const getDateLabel = (iso) => {
       const d = new Date(iso), t = new Date(), y = new Date(t); y.setDate(y.getDate()-1);
       if(isSameDay(d, t)) return "Today"; if(isSameDay(d, y)) return "Yesterday";
@@ -99,39 +190,56 @@
       img.onload = () => {
         const cvs = document.createElement('canvas');
         let { width, height } = img;
-        if (width > height && width > 1000) { height *= 1000 / width; width = 1000; } 
-        else if (height > 1000) { width *= 1000 / height; height = 1000; }
+        if (width > height && width > 1200) { height *= 1200 / width; width = 1200; } 
+        else if (height > 1200) { width *= 1200 / height; height = 1200; }
         cvs.width = width; cvs.height = height;
         cvs.getContext('2d').drawImage(img, 0, 0, width, height);
         resolve(cvs.toDataURL('image/jpeg', 0.6));
       };
       img.src = dataUrl;
     });
-    const blobToBase64 = blob => new Promise(res => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsDataURL(blob); });
 
+    const compressDp = (dataUrl) => new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const cvs = document.createElement('canvas');
+        const size = 200; 
+        cvs.width = size; cvs.height = size;
+        const ctx = cvs.getContext('2d');
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2;
+        const sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+        resolve(cvs.toDataURL('image/jpeg', 0.5));
+      };
+      img.src = dataUrl;
+    });
+
+    const blobToBase64 = blob => new Promise(res => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsDataURL(blob); });
+    
     const formatTextWithLinks = (text) => {
       if (!text) return null;
-      const regex = /(https?:\/\/[^\s]+)/g;
-      return text.split(regex).map((part, i) => 
-        part.match(regex) ? <a key={i} href={part} target="_blank" className="text-blue-400 underline underline-offset-2 break-words" onClick={e => e.stopPropagation()}>{part}</a> : <span key={i}>{part}</span>
-      );
+      return text.split(URL_REGEX).map((part, i) => part.match(URL_REGEX) ? <a key={i} href={part} target="_blank" className="underline underline-offset-2 break-all decoration-white/30 hover:decoration-white transition-all" onClick={e => e.stopPropagation()}>{part}</a> : <span key={i}>{part}</span>);
     };
 
-    const Avatar = ({ name, isOnline, size = "md", colorClass }) => {
-      const sizes = { sm: "w-8 h-8 text-sm", md: "w-10 h-10 text-base", lg: "w-20 h-20 text-3xl" };
+    const Avatar = ({ name, imgUrl, isOnline, size = "md", colorClass, onClick }) => {
+      const sizes = { sm: "w-8 h-8 text-xs", md: "w-10 h-10 text-base", lg: "w-24 h-24 text-4xl" };
       return (
-        <div className={`rounded-full flex items-center justify-center text-white font-bold shadow-sm relative shrink-0 ${colorClass} ${sizes[size]}`}>
-          {name ? name.charAt(0).toUpperCase() : "?"}
-          {isOnline && size !== "lg" && <div className={`absolute bottom-0 right-0 rounded-full bg-green-500 border-2 border-white dark:border-[#1a1d24] ${size==='sm'?'w-2.5 h-2.5':'w-3 h-3'}`}></div>}
+        <div onClick={onClick} className={`rounded-full flex items-center justify-center text-white font-semibold shadow-md relative shrink-0 ${colorClass} ${sizes[size]} ${onClick ? 'cursor-pointer' : ''} bg-cover bg-center`} style={imgUrl ? { backgroundImage: `url(${imgUrl})` } : {}}>
+          {!imgUrl && (name ? name.charAt(0).toUpperCase() : "?")}
+          {isOnline && size !== "lg" && <div className={`absolute bottom-0 right-0 rounded-full bg-green-500 border-2 border-ios-light dark:border-ios-dark ${size==='sm'?'w-2.5 h-2.5':'w-3 h-3'}`}></div>}
         </div>
       );
     };
 
     function App() {
-      const [user, setUser] = useState(() => localStorage.getItem('chat_user') || null);
+      const [user, setUser] = useState(() => window.safeStorage.get('chat_user') || null);
       const [backendUser, setBackendUser] = useState(null); 
-      
       const [messages, setMessages] = useState([]);
+      const [events, setEvents] = useState([]);
+      
+      const [myDp, setMyDp] = useState(null);
+      const [partnerDp, setPartnerDp] = useState(null);
       const [partnerStatus, setPartnerStatus] = useState({ online: false, lastActive: 0, typing: false });
       
       const [input, setInput] = useState("");
@@ -139,10 +247,14 @@
       const [editingMsg, setEditingMsg] = useState(null);
       const [activeMenu, setActiveMenu] = useState(null);
       const [pendingImages, setPendingImages] = useState([]);
+      const [pendingDoc, setPendingDoc] = useState(null);
+      const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
       
-      // NEW ROBUST MODAL STATE MANAGER
-      const [activeModal, setActiveModal] = useState(null); // 'settings', 'profile', 'image', null
+      const [activeModal, setActiveModal] = useState(null); 
       const [viewingImage, setViewingImage] = useState(null);
+      
+      const [profileTab, setProfileTab] = useState('media');
+      const [toast, setToast] = useState(null);
       
       const [showEmojis, setShowEmojis] = useState(false);
       const [showGifs, setShowGifs] = useState(false);
@@ -153,98 +265,49 @@
       const [isRecording, setIsRecording] = useState(false);
       const [recordTime, setRecordTime] = useState(0);
 
-      // Settings
-      const [isDark, setIsDark] = useState(() => { const s = localStorage.getItem('chat_theme'); return s ? s === 'dark' : true; });
-      const [chatColor, setChatColor] = useState(() => localStorage.getItem('chat_color') || 'blue');
-      const [wallpaper, setWallpaper] = useState(() => localStorage.getItem('chat_wallpaper') || '');
-      const [nickname, setNickname] = useState(() => localStorage.getItem('chat_nickname') || '');
+      const [drawColor, setDrawColor] = useState('#ffffff');
+      const [drawSize, setDrawSize] = useState(5);
+      const canvasRef = useRef(null);
+      const isDrawingRef = useRef(false);
 
+      const [newEventTitle, setNewEventTitle] = useState("");
+      const [newEventDate, setNewEventDate] = useState("");
+
+      const [isDark, setIsDark] = useState(() => { const s = window.safeStorage.get('chat_theme'); return s ? s === 'dark' : true; });
+      const [chatColor, setChatColor] = useState(() => window.safeStorage.get('chat_color') || 'blue');
+      
       const chatRef = useRef(null);
       const inputRef = useRef(null);
       const fileRef = useRef(null);
+      const docRef = useRef(null);
       const camRef = useRef(null);
+      const dpRef = useRef(null);
+      
       const mediaRecorder = useRef(null);
       const audioChunks = useRef([]);
       const timerRef = useRef(null);
       const typingTimer = useRef(null);
+      const toastTimer = useRef(null);
 
       const defaultPartner = user === 'Daksh' ? 'Brahmgeet' : 'Daksh';
-      const partnerName = nickname.trim() !== '' ? nickname : defaultPartner;
-      const avatarColor = partnerName === 'Brahmgeet' || partnerName.toLowerCase().includes('brahm') ? 'bg-pink-500' : 'bg-blue-500';
+      const partnerName = defaultPartner;
+      const avatarColor = partnerName.toLowerCase().includes('brahm') ? 'bg-gradient-to-br from-pink-400 to-rose-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500';
+      const myAvatarColor = user === 'Brahmgeet' ? 'bg-gradient-to-br from-pink-400 to-rose-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500';
 
-      // --- 1. NEW BULLETPROOF HISTORY API MANAGER ---
-      useEffect(() => {
-        // Enforce base state on load so it doesn't get confused by old ghost states
-        if (!window.history.state || !window.history.state.modal) {
-          window.history.replaceState({ modal: null }, '');
-        }
-
-        const handlePopState = (e) => {
-          const state = e.state;
-          if (state && state.modal) {
-            setActiveModal(state.modal);
-          } else {
-            // Hardware Back button pressed returning to root chat
-            setActiveModal(null);
-            setViewingImage(null);
-            setShowEmojis(false);
-            setShowGifs(false);
-            setActiveMenu(null);
-          }
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-      }, []);
-
-      const openSettings = () => {
-        window.history.pushState({ modal: 'settings' }, '');
-        setActiveModal('settings');
-      };
-
-      const openProfile = () => {
-        window.history.pushState({ modal: 'profile' }, '');
-        setActiveModal('profile');
-      };
-
-      const openImage = (img) => {
-        window.history.pushState({ modal: 'image' }, '');
-        setViewingImage(img);
-        setActiveModal('image');
-      };
-
-      // Guaranteed history cleaner when UI back buttons are clicked
-      const closeCurrentModal = () => {
-        setActiveModal(null);
-        setViewingImage(null);
-        // Only pop the history if we know we pushed one! Prevents closing the app.
-        if (window.history.state && window.history.state.modal) {
-          window.history.back();
-        }
-      };
-      // ----------------------------------------------
-
-      // SECURE AUTHENTICATION
       useEffect(() => {
         if (!window.Firebase) return;
-        window.Firebase.signInAnonymously(window.Firebase.auth).catch(console.error);
-        const unsub = window.Firebase.onAuthStateChanged(window.Firebase.auth, (u) => {
-          setBackendUser(u);
-        });
+        window.Firebase.signInAnonymously().catch(console.error);
+        const unsub = window.Firebase.onAuthStateChanged(setBackendUser);
         return () => unsub();
       }, []);
 
-      // THEME SYNC
       useEffect(() => {
         if (isDark) document.documentElement.classList.add('dark');
         else document.documentElement.classList.remove('dark');
-        localStorage.setItem('chat_theme', isDark ? 'dark' : 'light');
-      }, [isDark]);
-      useEffect(() => localStorage.setItem('chat_color', chatColor), [chatColor]);
-      useEffect(() => localStorage.setItem('chat_wallpaper', wallpaper), [wallpaper]);
-      useEffect(() => localStorage.setItem('chat_nickname', nickname), [nickname]);
+        window.safeStorage.set('chat_theme', isDark ? 'dark' : 'light');
+        window.safeStorage.set('chat_color', chatColor);
+      }, [isDark, chatColor]);
 
-      // DATABASE LISTENER
       useEffect(() => {
         if (!user || !backendUser) return;
         const { db, collection, doc, onSnapshot, setDoc, updateDoc } = window.Firebase;
@@ -252,38 +315,43 @@
         const msgsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'messages');
         const unsubMsgs = onSnapshot(msgsRef, snap => {
           const rawMsgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          
-          rawMsgs.forEach(m => {
-            if (m.sender !== user && m.status !== 'read') {
-              updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'messages', m.id), { status: 'read' }).catch(()=>{});
-            }
-          });
-
+          rawMsgs.forEach(m => { if (m.sender !== user && m.status !== 'read') updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'messages', m.id), { status: 'read' }).catch(()=>{}); });
           rawMsgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-          
           setMessages(rawMsgs);
-          setTimeout(() => chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight }), 50);
-        }, err => console.error("Sync Error:", err));
+          setTimeout(() => { if (chatRef.current) chatRef.current.scrollTo({ top: chatRef.current.scrollHeight }); }, 50);
+        });
+
+        const eventsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'events');
+        const unsubEvents = onSnapshot(eventsRef, snap => {
+          const evts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          evts.sort((a, b) => new Date(a.date) - new Date(b.date));
+          setEvents(evts);
+        });
 
         const myRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'presence', user);
         const pRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'presence', defaultPartner);
+
+        const unsubPresence = onSnapshot(pRef, d => { 
+          if (d.exists()) {
+            setPartnerStatus(d.data()); 
+            if(d.data().dp) setPartnerDp(d.data().dp);
+          } 
+        });
+
+        const unsubMyPresence = onSnapshot(myRef, d => {
+          if (d.exists() && d.data().dp) setMyDp(d.data().dp);
+        });
 
         const updateOnline = () => setDoc(myRef, { online: true, lastActive: Date.now() }, { merge: true }).catch(()=>{});
         updateOnline();
         const heartbeat = setInterval(updateOnline, 30000);
         
-        const handleVis = () => {
-          if (document.visibilityState === 'hidden') setDoc(myRef, { online: false, lastActive: Date.now() }, { merge: true });
-          else updateOnline();
-        };
+        const handleVis = () => document.visibilityState === 'hidden' ? setDoc(myRef, { online: false, lastActive: Date.now() }, { merge: true }) : updateOnline();
         document.addEventListener('visibilitychange', handleVis);
 
-        const unsubPresence = onSnapshot(pRef, d => { if (d.exists()) setPartnerStatus(d.data()); });
-
-        return () => { unsubMsgs(); unsubPresence(); clearInterval(heartbeat); document.removeEventListener('visibilitychange', handleVis); };
+        return () => { unsubMsgs(); unsubEvents(); unsubPresence(); unsubMyPresence(); clearInterval(heartbeat); document.removeEventListener('visibilitychange', handleVis); };
       }, [user, backendUser]);
 
-      // GIFS
       useEffect(() => {
         if (!showGifs) return;
         const fetchGifs = async () => {
@@ -292,20 +360,87 @@
             const q = gifSearch.trim() || 'trending';
             const res = await fetch(`https://g.tenor.com/v1/${q === 'trending' ? 'trending' : 'search?q='+q}&key=LIVDSRZULELA&limit=30`);
             const data = await res.json();
-            if (data.results) setTenorGifs(data.results.map(g => g.media[0].gif.url));
-          } catch (e) {} finally { setIsSearchingGifs(false); }
+            if (data && data.results) {
+              const urls = data.results.map(g => {
+                if (g && g.media && g.media[0] && g.media[0].gif && g.media[0].gif.url) {
+                  return g.media[0].gif.url;
+                }
+                return null;
+              }).filter(Boolean);
+              setTenorGifs(urls);
+            }
+          } catch (e) {
+            console.error("GIF Error", e);
+          } finally {
+            setIsSearchingGifs(false);
+          }
         };
         const t = setTimeout(fetchGifs, 400);
         return () => clearTimeout(t);
       }, [gifSearch, showGifs]);
 
-      // INPUT & TYPING INDICATOR
+      useEffect(() => {
+        if(activeModal === 'draw' && canvasRef.current) {
+          const cvs = canvasRef.current;
+          cvs.width = cvs.offsetWidth;
+          cvs.height = cvs.offsetHeight;
+          const ctx = cvs.getContext('2d');
+          ctx.fillStyle = '#1c1c1e';
+          ctx.fillRect(0,0, cvs.width, cvs.height);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+        }
+      }, [activeModal]);
+
+      const mediaItems = useMemo(() => {
+        const items = [];
+        messages.forEach(m => {
+          if (m.images) m.images.forEach(img => items.push({ url: img, id: m.id }));
+          else if (m.image) items.push({ url: m.image, id: m.id });
+        });
+        return items.reverse();
+      }, [messages]);
+
+      const linkItems = useMemo(() => {
+        const items = [];
+        messages.forEach(m => {
+          if (m.text) {
+            const matches = m.text.match(URL_REGEX);
+            if (matches) matches.forEach(url => items.push({ url, id: m.id, time: m.timestamp, sender: m.sender }));
+          }
+        });
+        return items.reverse();
+      }, [messages]);
+
+      const docItems = useMemo(() => {
+        const items = [];
+        messages.forEach(m => {
+          if (m.doc) items.push({ doc: m.doc, id: m.id, time: m.timestamp, sender: m.sender });
+        });
+        return items.reverse();
+      }, [messages]);
+
+      const openModal = (type, data = null) => { 
+        if (type === 'image') setViewingImage(data); 
+        setActiveModal(type); 
+        setActiveMenu(null); 
+        setShowAttachmentMenu(false); 
+      };
+
+      const closeCurrentModal = () => { 
+        setActiveModal(null); 
+        setViewingImage(null); 
+      };
+      
+      const showToast = (msg, icon) => {
+        setToast({ msg, icon });
+        clearTimeout(toastTimer.current);
+        toastTimer.current = setTimeout(() => setToast(null), 3000);
+      };
+
       const handleType = (e) => {
         setInput(e.target.value);
-        if (inputRef.current) {
-          inputRef.current.style.height = '40px';
-          inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + 'px';
-        }
+        if (inputRef.current) { inputRef.current.style.height = '40px'; inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + 'px'; }
         if (user && backendUser) {
           const ref = window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'presence', user);
           window.Firebase.setDoc(ref, { typing: true, lastActive: Date.now() }, { merge: true });
@@ -314,7 +449,79 @@
         }
       };
 
-      // VOICE
+      const startDraw = (e) => {
+        if (!canvasRef.current) return;
+        isDrawingRef.current = true;
+        const ctx = canvasRef.current.getContext('2d');
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = (e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX)) - rect.left;
+        const y = (e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY)) - rect.top;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      };
+      
+      const draw = (e) => {
+        if(!isDrawingRef.current || !canvasRef.current) return;
+        e.preventDefault(); 
+        const ctx = canvasRef.current.getContext('2d');
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = (e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX)) - rect.left;
+        const y = (e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY)) - rect.top;
+        ctx.strokeStyle = drawColor;
+        ctx.lineWidth = drawSize;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      };
+      
+      const stopDraw = () => { isDrawingRef.current = false; };
+
+      const handleImageUpload = async (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+        setShowAttachmentMenu(false);
+        const compressedImgs = await Promise.all(files.map(async file => {
+           const dataUrl = await new Promise(resolve => { const r = new FileReader(); r.onloadend = () => resolve(r.result); r.readAsDataURL(file); });
+           return await compressImage(dataUrl);
+        }));
+        setPendingImages(prev => [...prev, ...compressedImgs]);
+      };
+
+      const handleDpUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const dataUrl = await new Promise(resolve => { const r = new FileReader(); r.onloadend = () => resolve(r.result); r.readAsDataURL(file); });
+        const compressedDp = await compressDp(dataUrl);
+        
+        await window.Firebase.updateDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'presence', user), { dp: compressedDp });
+        setMyDp(compressedDp);
+        showToast("Profile Picture Updated!", "fa-circle-check text-green-500");
+      };
+
+      const handleDocUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setShowAttachmentMenu(false);
+        if (file.size > 500 * 1024) {
+          showToast(`File is ${Math.round(file.size/1024)}KB. Max limit is 500KB.`, "fa-circle-xmark text-red-500");
+          e.target.value = null;
+          return;
+        }
+        const dataUrl = await blobToBase64(file);
+        setPendingDoc({ name: file.name, size: file.size, data: dataUrl });
+      };
+
+      const saveCalendarEvent = async () => {
+        if(!newEventTitle || !newEventDate) return;
+        await window.Firebase.setDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'events', Date.now().toString()), {
+          title: newEventTitle,
+          date: newEventDate,
+          creator: user,
+          timestamp: new Date().toISOString()
+        });
+        setNewEventTitle(""); setNewEventDate("");
+        showToast("Event Added to Calendar", "fa-calendar-check text-green-500");
+      };
+
       const startVoice = async () => {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -324,116 +531,83 @@
           mediaRecorder.current.onstop = async () => {
             const blob = new Blob(audioChunks.current, { type: 'audio/webm' });
             stream.getTracks().forEach(t => t.stop());
-            const b64 = await blobToBase64(blob);
-            sendPayload({ audio: b64 });
+            sendPayload({ audio: await blobToBase64(blob) });
           };
           mediaRecorder.current.start();
-          setIsRecording(true);
-          setRecordTime(0);
-          timerRef.current = setInterval(() => {
-            setRecordTime(p => { if (p >= 59) { stopVoice(); return 60; } return p + 1; });
-          }, 1000);
-        } catch (e) { alert("Mic access denied"); }
+          setIsRecording(true); setRecordTime(0);
+          timerRef.current = setInterval(() => setRecordTime(p => p >= 59 ? (stopVoice(), 60) : p + 1), 1000);
+        } catch (e) { showToast("Microphone access denied", "fa-microphone-slash text-red-500"); }
       };
+      
       const stopVoice = () => { if (mediaRecorder.current && isRecording) { mediaRecorder.current.stop(); setIsRecording(false); clearInterval(timerRef.current); } };
-      const cancelVoice = () => { if (mediaRecorder.current && isRecording) { mediaRecorder.current.onstop = () => { mediaRecorder.current.stream.getTracks().forEach(t => t.stop()); }; mediaRecorder.current.stop(); setIsRecording(false); clearInterval(timerRef.current); } };
+      const cancelVoice = () => { if (mediaRecorder.current && isRecording) { mediaRecorder.current.onstop = () => mediaRecorder.current.stream.getTracks().forEach(t => t.stop()); mediaRecorder.current.stop(); setIsRecording(false); clearInterval(timerRef.current); } };
 
-      // SEND LOGIC
       const sendPayload = async ({ text = null, image = null, audio = null }) => {
         const finalText = text !== null ? text : input.trim();
         const imgsToSave = image ? [image] : [...pendingImages];
+        const docToSave = pendingDoc;
         
-        if (!finalText && imgsToSave.length === 0 && !audio) return;
+        if (!finalText && imgsToSave.length === 0 && !audio && !docToSave) return;
 
-        setInput(""); setShowEmojis(false); setShowGifs(false); setActiveMenu(null);
-        setPendingImages([]); 
+        setInput(""); setShowEmojis(false); setShowGifs(false); setActiveMenu(null); setShowAttachmentMenu(false);
+        setPendingImages([]); setPendingDoc(null);
         if (inputRef.current) inputRef.current.style.height = '40px';
 
-        if (editingMsg && imgsToSave.length === 0 && !audio) {
+        if (editingMsg && imgsToSave.length === 0 && !audio && !docToSave) {
           await window.Firebase.updateDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', editingMsg.id), { text: finalText, isEdited: true });
-          setEditingMsg(null);
-          return;
+          setEditingMsg(null); return;
         }
 
         const payload = { id: Date.now().toString(), sender: user, timestamp: new Date().toISOString(), status: 'sent', reactions: [] };
-
         if (finalText) payload.text = finalText;
         if (audio) payload.audio = audio;
+        if (docToSave) payload.doc = docToSave;
         if (imgsToSave.length === 1) payload.image = imgsToSave[0];
         else if (imgsToSave.length > 1) payload.images = imgsToSave;
         if (replyingTo) { payload.replyTo = { sender: replyingTo.sender, text: replyingTo.text || 'Attachment' }; setReplyingTo(null); }
 
         await window.Firebase.setDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', payload.id), payload);
-        setTimeout(() => chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' }), 50);
-
-        const hook = WEBHOOKS[user];
-        if (hook && !audio) {
-          let content = finalText || (imgsToSave.length > 0 ? `[${imgsToSave.length} Image(s)]` : "");
-          if (payload.replyTo) content = `> **Replying to ${payload.replyTo.sender}:** *${payload.replyTo.text}*\n\n${content}`;
-          const body = { username: user, content };
-          if (imgsToSave.length > 0) body.embeds = imgsToSave.slice(0, 10).map(img => ({ image: { url: img } }));
-          fetch(hook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(()=>{});
-        }
-      };
-
-      // MULTIPLE FILE HANDLING
-      const handleFile = async (e) => {
-        const files = Array.from(e.target.files);
-        if (!files.length) return;
-        
-        const compressedImgs = [];
-        for (const file of files) {
-           const dataUrl = await new Promise(resolve => {
-             const r = new FileReader();
-             r.onloadend = () => resolve(r.result);
-             r.readAsDataURL(file);
-           });
-           const comp = await compressImage(dataUrl);
-           compressedImgs.push(comp);
-        }
-        
-        setPendingImages(prev => [...prev, ...compressedImgs]);
+        setTimeout(() => { if (chatRef.current) chatRef.current.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' }) }, 50);
       };
 
       const handleReaction = async (id, emoji, curr = []) => {
-        if (!curr.includes(emoji)) {
-          curr.push(emoji);
-          await window.Firebase.updateDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', id), { reactions: curr });
-        }
+        if (!curr.includes(emoji)) { curr.push(emoji); await window.Firebase.updateDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', id), { reactions: curr }); }
         setActiveMenu(null);
       };
 
-      const clearHistory = async () => {
-        if (confirm("Delete chat history globally?")) {
-          messages.forEach(m => window.Firebase.deleteDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', m.id)).catch(()=>{}));
-          closeCurrentModal();
-        }
+      const formatBytes = (bytes) => {
+        if(bytes < 1024) return bytes + " B";
+        else if(bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / 1048576).toFixed(1) + " MB";
       };
 
-      // LOGIN RENDER
       if (!user) {
         return (
-          <div className="h-[100dvh] w-full flex flex-col justify-center items-center p-6 bg-gray-50 dark:bg-[#0f1115] transition-colors relative overflow-hidden">
-            <div className="w-full max-w-sm p-8 bg-white dark:bg-[#1a1d24] rounded-[2rem] shadow-xl border border-gray-100 dark:border-gray-800 text-center relative z-10 animate-fade-in">
-              <div className="w-20 h-20 mx-auto bg-gradient-to-tr from-blue-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-lg mb-6 transform -rotate-6"><i className="fa-solid fa-bolt text-white text-3xl"></i></div>
-              <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">Direct Messages</h1>
-              <p className="text-sm text-gray-500 mb-8 font-medium">Select your identity to sync.</p>
-              <button onClick={() => { setUser('Daksh'); localStorage.setItem('chat_user', 'Daksh'); }} className="w-full py-4 mb-4 bg-blue-500 text-white rounded-2xl font-bold shadow-md hover:bg-blue-600 transition-colors text-lg">I am Daksh</button>
-              <button onClick={() => { setUser('Brahmgeet'); localStorage.setItem('chat_user', 'Brahmgeet'); }} className="w-full py-4 bg-pink-500 text-white rounded-2xl font-bold shadow-md hover:bg-pink-600 transition-colors text-lg">I am Brahmgeet</button>
+          <div className="h-[100dvh] w-full flex flex-col justify-center items-center p-6 transition-colors relative overflow-hidden bg-ios-light dark:bg-ios-dark">
+            <div className="w-full max-w-sm p-8 bg-white dark:bg-[#1c1c1e] rounded-[32px] shadow-2xl border border-gray-100 dark:border-white/5 text-center relative z-10 animate-slide-up">
+              <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/30 mb-6">
+                <i className="fa-brands fa-telegram text-white text-4xl"></i>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">V3 Premium</h1>
+              <p className="text-sm text-gray-500 mb-8 font-medium">Select your synced profile</p>
+              
+              <div className="space-y-3">
+                <button onClick={() => { setUser('Daksh'); window.safeStorage.set('chat_user', 'Daksh'); }} className="w-full flex items-center p-4 bg-gray-50 dark:bg-black rounded-2xl hover:scale-[1.02] transition-transform">
+                  <Avatar name="Daksh" size="md" colorClass="bg-gradient-to-br from-blue-400 to-indigo-500" />
+                  <span className="ml-4 font-semibold text-lg">Daksh</span>
+                  <i className="fa-solid fa-chevron-right ml-auto text-gray-300 dark:text-gray-600"></i>
+                </button>
+                <button onClick={() => { setUser('Brahmgeet'); window.safeStorage.set('chat_user', 'Brahmgeet'); }} className="w-full flex items-center p-4 bg-gray-50 dark:bg-black rounded-2xl hover:scale-[1.02] transition-transform">
+                  <Avatar name="Brahmgeet" size="md" colorClass="bg-gradient-to-br from-pink-400 to-rose-500" />
+                  <span className="ml-4 font-semibold text-lg">Brahmgeet</span>
+                  <i className="fa-solid fa-chevron-right ml-auto text-gray-300 dark:text-gray-600"></i>
+                </button>
+              </div>
             </div>
           </div>
         );
       }
 
-      // PRESENCE STRING
-      let statusText = "Connecting...";
-      if (partnerStatus.online && Date.now() - partnerStatus.lastActive < 60000) {
-        statusText = partnerStatus.typing ? "Typing..." : "Online";
-      } else if (partnerStatus.lastActive) {
-        statusText = `Last seen ${formatTime(new Date(partnerStatus.lastActive).toISOString())}`;
-      }
-
-      // GROUP MESSAGES
       const grouped = [];
       let lastD = null;
       messages.forEach(m => {
@@ -442,116 +616,246 @@
         grouped.push({ type: 'msg', ...m });
       });
 
-      const hasContentToSend = input.trim() || pendingImages.length > 0 || editingMsg;
+      const hasContentToSend = input.trim() || pendingImages.length > 0 || pendingDoc || editingMsg;
+      let statusText = "connecting...";
+      if (partnerStatus.online && Date.now() - partnerStatus.lastActive < 60000) statusText = partnerStatus.typing ? "typing..." : "online";
+      else if (partnerStatus.lastActive) statusText = `last seen ${formatTime(new Date(partnerStatus.lastActive).toISOString())}`;
 
       return (
-        <div className="flex flex-col h-[100dvh] w-full sm:max-w-2xl lg:max-w-4xl mx-auto bg-white dark:bg-[#0f1115] sm:border-x border-gray-200 dark:border-gray-800 relative shadow-2xl overflow-hidden" onClick={() => { setActiveMenu(null); setShowEmojis(false); setShowGifs(false); }}>
+        <div className="flex flex-col h-[100dvh] w-full sm:max-w-md lg:max-w-2xl mx-auto bg-ios-light dark:bg-ios-dark sm:border-x border-gray-200 dark:border-white/5 relative shadow-2xl overflow-hidden text-[15px]" onClick={() => { setActiveMenu(null); setShowEmojis(false); setShowGifs(false); setShowAttachmentMenu(false); }}>
           
-          {/* IMAGE PREVIEW MODAL */}
+          <input type="file" ref={fileRef} onChange={handleImageUpload} onClick={e=> {if(e.target) e.target.value=null;}} accept="image/*" multiple className="hidden" />
+          <input type="file" ref={camRef} onChange={handleImageUpload} onClick={e=> {if(e.target) e.target.value=null;}} accept="image/*" capture="environment" className="hidden" />
+          <input type="file" ref={docRef} onChange={handleDocUpload} onClick={e=> {if(e.target) e.target.value=null;}} accept=".pdf,.doc,.docx,.txt,.csv,.zip,.rtf" className="hidden" />
+          <input type="file" ref={dpRef} onChange={handleDpUpload} onClick={e=> {if(e.target) e.target.value=null;}} accept="image/*" className="hidden" />
+
+          {toast && (
+             <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[200] animate-toast-drop flex items-center gap-3 px-5 py-3 glass-header rounded-full shadow-xl border border-gray-200 dark:border-white/10 whitespace-nowrap">
+                <i className={`fa-solid ${toast.icon} text-lg`}></i>
+                <span className="font-semibold text-sm">{toast.msg}</span>
+             </div>
+          )}
+
           {activeModal === 'image' && viewingImage && (
-            <div className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={closeCurrentModal}>
-              <button className="absolute top-6 right-6 w-10 h-10 bg-white/20 rounded-full text-white" onClick={(e) => { e.stopPropagation(); closeCurrentModal(); }}><i className="fa-solid fa-xmark"></i></button>
-              <img src={viewingImage} className="max-w-full max-h-[85vh] rounded-lg object-contain" onClick={e=>e.stopPropagation()} />
+            <div className="fixed inset-0 bg-black/95 z-[100] flex flex-col animate-fade-in" onClick={closeCurrentModal}>
+              <div className="w-full p-4 flex justify-between items-center z-10">
+                <button className="w-10 h-10 text-white flex items-center justify-center text-xl" onClick={closeCurrentModal}><i className="fa-solid fa-arrow-left"></i></button>
+                <a href={viewingImage} download="Image" className="w-10 h-10 text-white flex items-center justify-center text-xl" onClick={e=>e.stopPropagation()}><i className="fa-solid fa-download"></i></a>
+              </div>
+              <div className="flex-1 flex items-center justify-center p-4">
+                <img src={viewingImage} className="max-w-full max-h-full object-contain" onClick={e=>e.stopPropagation()} />
+              </div>
             </div>
           )}
 
-          {/* HIDDEN FILE INPUTS (added proper value clearing to stop OS freeze) */}
-          <input type="file" ref={fileRef} onChange={handleFile} onClick={(e) => { e.target.value = null; }} accept="image/*" multiple className="hidden" />
-          <input type="file" ref={camRef} onChange={handleFile} onClick={(e) => { e.target.value = null; }} accept="image/*" capture="environment" className="hidden" />
-
-          {/* SETTINGS MENU */}
-          {activeModal === 'settings' && (
-            <div className="absolute inset-0 z-50 bg-white dark:bg-[#1a1d24] flex flex-col animate-slide-in-right" onClick={e=>e.stopPropagation()}>
-              <div className="flex items-center px-4 py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1d24]">
-                <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mr-4"><i className="fa-solid fa-arrow-left"></i></button>
-                <h2 className="font-bold text-lg text-gray-900 dark:text-white">Settings</h2>
+          {activeModal === 'draw' && (
+            <div className="absolute inset-0 z-[120] bg-[#1c1c1e] flex flex-col animate-slide-up overflow-hidden" onClick={e=>e.stopPropagation()}>
+              <div className="absolute top-0 w-full p-4 flex justify-between items-center z-10 bg-gradient-to-b from-black/60 to-transparent">
+                <button className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur-md" onClick={closeCurrentModal}><i className="fa-solid fa-xmark"></i></button>
+                <button className="px-5 py-2 rounded-full bg-blue-500 text-white font-bold backdrop-blur-md hover:scale-105 transition-transform" onClick={() => { sendPayload({ image: canvasRef.current.toDataURL('image/jpeg', 0.8) }); closeCurrentModal(); }}>Send</button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50 dark:bg-[#0f1115]">
-                
-                <div className="bg-white dark:bg-[#1a1d24] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
-                  <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsDark(!isDark)}>
-                    <div className="flex items-center gap-3 text-gray-900 dark:text-white font-semibold">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-500'}`}><i className={`fa-solid ${isDark ? 'fa-moon' : 'fa-sun'}`}></i></div> Dark Mode
-                    </div>
-                    <div className={`w-12 h-6 rounded-full p-1 transition-colors relative ${isDark ? 'bg-blue-500' : 'bg-gray-300'}`}><div className={`w-4 h-4 bg-white rounded-full transition-transform ${isDark ? 'translate-x-6' : 'translate-x-0'}`} /></div>
-                  </div>
+              
+              <canvas ref={canvasRef} className="draw-canvas w-full h-full flex-1" onPointerDown={startDraw} onPointerMove={draw} onPointerUp={stopDraw} onPointerOut={stopDraw}></canvas>
+              
+              <div className="absolute bottom-0 w-full p-6 pb-safe bg-gradient-to-t from-black/80 to-transparent flex flex-col gap-4 z-10">
+                <div className="flex items-center gap-4">
+                   <i className="fa-solid fa-paintbrush text-white opacity-50"></i>
+                   <input type="range" min="2" max="30" value={drawSize} onChange={e=>setDrawSize(e.target.value)} className="flex-1 accent-white" />
                 </div>
-
-                <div className="bg-white dark:bg-[#1a1d24] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 space-y-5">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Nickname</label>
-                    <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder={defaultPartner} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:border-blue-500 font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Accent Color</label>
-                    <div className="flex gap-3">
-                      {THEMES.colors.map(c => (
-                        <button key={c.value} onClick={() => setChatColor(c.value)} className={`w-10 h-10 rounded-full shadow-sm ${c.class} ${chatColor === c.value ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-[#1a1d24]' : ''}`} title={c.name}></button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Wallpaper</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {THEMES.wallpapers.map(w => (
-                        <button key={w.name} onClick={() => setWallpaper(w.class)} className={`py-3 rounded-xl border-2 font-bold text-sm ${wallpaper === w.class ? 'border-blue-500 text-blue-500' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}>{w.name}</button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-[#1a1d24] rounded-2xl p-2 shadow-sm border border-gray-100 dark:border-gray-800">
-                  <button onClick={clearHistory} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 font-semibold text-left">
-                    <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/20 flex items-center justify-center"><i className="fa-solid fa-trash"></i></div>
-                    <div><div className="text-sm">Clear Chat History</div><div className="text-[10px] font-normal opacity-80">Deletes globally for both</div></div>
-                  </button>
-                  <button onClick={() => { setUser(null); localStorage.removeItem('chat_user'); closeCurrentModal(); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold text-left">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center"><i className="fa-solid fa-right-from-bracket"></i></div>
-                    <div className="text-sm">Logout</div>
-                  </button>
+                <div className="flex justify-between items-center px-2">
+                  {DRAW_COLORS.map(c => (
+                     <button key={c} onClick={() => setDrawColor(c)} className={`w-8 h-8 rounded-full border-[3px] transition-transform ${drawColor === c ? 'scale-125 border-white' : 'border-transparent hover:scale-110'}`} style={{backgroundColor: c}}></button>
+                  ))}
                 </div>
               </div>
             </div>
           )}
 
-          {/* PROFILE VIEWER */}
+          {activeModal === 'calendar' && (
+            <div className="absolute inset-0 z-50 bg-ios-light dark:bg-ios-dark flex flex-col animate-slide-right overflow-hidden" onClick={e=>e.stopPropagation()}>
+              <div className="glass-header px-4 py-3 flex items-center shrink-0">
+                <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center text-blue-500 hover:text-blue-600 text-xl -ml-2"><i className="fa-solid fa-chevron-left"></i><span className="text-base ml-1">Back</span></button>
+                <h2 className="font-semibold text-lg ml-auto mr-auto -translate-x-4">Shared Events</h2>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+                 <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5">
+                   <h3 className="text-sm font-bold text-gray-500 uppercase mb-3"><i className="fa-solid fa-plus mr-1.5"></i> Add New Event</h3>
+                   <input type="text" placeholder="Event Title (e.g. Movie Night)" value={newEventTitle} onChange={e=>setNewEventTitle(e.target.value)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 mb-3 outline-none focus:border-blue-500 text-sm font-medium" />
+                   <div className="flex gap-3">
+                     <input type="date" value={newEventDate} onChange={e=>setNewEventDate(e.target.value)} className="flex-1 bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 text-sm font-medium dark:[color-scheme:dark]" />
+                     <button onClick={saveCalendarEvent} className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 rounded-xl transition-colors">Save</button>
+                   </div>
+                 </div>
+
+                 <div className="space-y-2">
+                   {events.length === 0 ? <div className="text-center text-gray-400 py-10 font-medium">No upcoming events</div> : events.map(evt => (
+                     <div key={evt.id} className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex items-center justify-between">
+                       <div className="flex items-center gap-4">
+                         <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex flex-col items-center justify-center shrink-0">
+                           <span className="text-[10px] font-bold uppercase opacity-80 leading-none mb-0.5">{new Date(evt.date).toLocaleString('default', { month: 'short' })}</span>
+                           <span className="text-lg font-bold leading-none">{new Date(evt.date).getDate()}</span>
+                         </div>
+                         <div>
+                           <div className="font-bold text-gray-900 dark:text-white text-lg">{evt.title}</div>
+                           <div className="text-xs text-gray-500">Added by {evt.creator}</div>
+                         </div>
+                       </div>
+                       <button onClick={() => window.Firebase.deleteDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'events', evt.id))} className="w-8 h-8 text-gray-400 hover:text-red-500 transition-colors"><i className="fa-solid fa-trash-can"></i></button>
+                     </div>
+                   ))}
+                 </div>
+              </div>
+            </div>
+          )}
+
           {activeModal === 'profile' && (
-            <div className="absolute inset-0 z-40 bg-white dark:bg-[#1a1d24] flex flex-col animate-slide-in-right" onClick={e=>e.stopPropagation()}>
-              <div className="flex items-center px-4 py-4 border-b border-gray-100 dark:border-gray-800">
-                <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mr-4"><i className="fa-solid fa-arrow-left"></i></button>
-                <h2 className="font-bold text-lg text-gray-900 dark:text-white">Profile</h2>
+            <div className="absolute inset-0 z-40 bg-ios-light dark:bg-ios-dark flex flex-col animate-slide-right overflow-hidden" onClick={e=>e.stopPropagation()}>
+              <div className="glass-header px-4 py-3 flex items-center shrink-0">
+                <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center text-blue-500 hover:text-blue-600 text-xl -ml-2"><i className="fa-solid fa-chevron-left"></i><span className="text-base ml-1">Back</span></button>
+                <h2 className="font-semibold text-lg ml-auto mr-auto -translate-x-4">Info</h2>
               </div>
-              <div className="flex flex-col items-center justify-center p-12 bg-gray-50 dark:bg-[#0f1115] flex-1">
-                <Avatar name={partnerName} size="lg" colorClass={avatarColor} />
-                <h2 className="text-3xl font-extrabold mt-6 text-gray-900 dark:text-white">{partnerName}</h2>
-                <p className={`text-sm font-semibold mt-2 ${statusText === 'Online' || statusText === 'Typing...' ? 'text-green-500' : 'text-gray-500'}`}>{statusText}</p>
+              
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="flex flex-col items-center justify-center pt-8 pb-6 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/5 shadow-sm">
+                  <Avatar name={partnerName} imgUrl={partnerDp} size="lg" colorClass={avatarColor} />
+                  <h2 className="text-2xl font-bold mt-4">{partnerName}</h2>
+                  <p className={`text-sm mt-1 ${statusText==='online'||statusText==='typing...'?'text-blue-500':'text-gray-500'}`}>{statusText}</p>
+                  
+                  <div className="mt-6 w-full px-12">
+                    <button className="w-full flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 py-3 rounded-2xl font-bold transition-colors" onClick={closeCurrentModal}>
+                      <i className="fa-solid fa-comment text-lg"></i> Send Message
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-[#1c1c1e] mt-4 border-y border-gray-200 dark:border-white/5 shadow-sm min-h-[50vh]">
+                  <div className="flex border-b border-gray-200 dark:border-white/5">
+                    <button onClick={()=>setProfileTab('media')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='media'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Media</button>
+                    <button onClick={()=>setProfileTab('docs')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='docs'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Docs</button>
+                    <button onClick={()=>setProfileTab('links')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='links'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Links</button>
+                  </div>
+                  
+                  <div className="p-1">
+                    {profileTab === 'media' && (
+                      <div className="grid grid-cols-3 gap-1">
+                        {mediaItems.length === 0 ? <div className="col-span-3 py-10 text-center text-gray-400 text-sm">No media found</div> : mediaItems.map((img, i) => (
+                          <div key={i} className="aspect-square bg-gray-100 dark:bg-gray-800 cursor-pointer overflow-hidden" onClick={() => openModal('image', img.url)}>
+                            <img src={img.url} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {profileTab === 'docs' && (
+                      <div className="flex flex-col divide-y divide-gray-100 dark:divide-white/5">
+                         {docItems.length === 0 ? <div className="py-10 text-center text-gray-400 text-sm">No documents found</div> : docItems.map((d, i) => (
+                           <div key={i} className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                             <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-2xl mr-4 shrink-0"><i className="fa-solid fa-file-lines"></i></div>
+                             <div className="flex-1 min-w-0 mr-4">
+                               <div className="font-semibold text-[15px] truncate">{d.doc.name}</div>
+                               <div className="text-xs text-gray-500 flex gap-2 mt-0.5"><span>{formatBytes(d.doc.size)}</span><span>•</span><span>{new Date(d.time).toLocaleDateString()}</span></div>
+                             </div>
+                             <a href={d.doc.data} download={d.doc.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-blue-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i className="fa-solid fa-arrow-down text-sm"></i></a>
+                           </div>
+                         ))}
+                      </div>
+                    )}
+
+                    {profileTab === 'links' && (
+                      <div className="flex flex-col divide-y divide-gray-100 dark:divide-white/5">
+                        {linkItems.length === 0 ? <div className="py-10 text-center text-gray-400 text-sm">No links found</div> : linkItems.map((l, i) => (
+                          <a key={i} href={l.url} target="_blank" className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                             <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 mr-4 shrink-0 group-hover:bg-blue-500 group-hover:text-white transition-colors"><i className="fa-solid fa-link"></i></div>
+                             <div className="flex-1 min-w-0">
+                               <div className="font-medium text-[15px] text-blue-500 truncate">{l.url}</div>
+                               <div className="text-xs text-gray-500 mt-0.5">Sent by {l.sender}</div>
+                             </div>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* HEADER */}
-          <header className="flex items-center justify-between px-4 py-2.5 bg-white/90 dark:bg-[#1a1d24]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-20 shrink-0">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={openProfile}>
-              <Avatar name={partnerName} isOnline={partnerStatus.online && Date.now() - partnerStatus.lastActive < 60000} size="md" colorClass={avatarColor} />
-              <div className="flex flex-col">
-                <span className="font-bold text-[16px] text-gray-900 dark:text-white leading-tight">{partnerName}</span>
-                <span className={`text-[12px] font-semibold leading-tight ${statusText === 'Online' || statusText === 'Typing...' ? 'text-blue-500 animate-pulse' : 'text-gray-500'}`}>{statusText}</span>
+          {activeModal === 'settings' && (
+            <div className="absolute inset-0 z-50 bg-black/40 dark:bg-black/60 backdrop-blur-sm flex flex-col justify-end animate-fade-in" onClick={closeCurrentModal}>
+              <div className="bg-[#f8fafc] dark:bg-[#0f1115] w-full rounded-t-[32px] flex flex-col max-h-[90vh] animate-drawer-up shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-gray-200 dark:border-gray-800" onClick={e=>e.stopPropagation()}>
+                <div className="drag-handle"></div>
+                <div className="px-6 pb-2 flex justify-between items-center">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h2>
+                  <button onClick={closeCurrentModal} className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400"><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto px-6 pb-8 custom-scrollbar">
+                  
+                  <div className="flex flex-col items-center justify-center py-6">
+                     <div className="relative group cursor-pointer" onClick={() => { if(dpRef.current) dpRef.current.click() }}>
+                        <Avatar name={user} imgUrl={myDp} size="lg" colorClass={myAvatarColor} />
+                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                           <i className="fa-solid fa-camera text-white text-2xl"></i>
+                        </div>
+                     </div>
+                     <div className="mt-3 text-sm text-gray-500 font-medium">Tap to change profile picture</div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-white dark:bg-[#1a1d24] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800/50 flex items-center justify-between cursor-pointer" onClick={() => setIsDark(!isDark)}>
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-500'}`}><i className={`fa-solid ${isDark ? 'fa-moon' : 'fa-sun'}`}></i></div> 
+                        <div><div className="font-bold text-gray-900 dark:text-white">Dark Mode</div><div className="text-xs text-gray-500">Toggle dark interface</div></div>
+                      </div>
+                      <div className={`w-14 h-8 rounded-full p-1 transition-colors relative ${isDark ? 'bg-blue-500' : 'bg-gray-200'}`}><div className={`w-6 h-6 bg-white rounded-full shadow-sm transition-transform ${isDark ? 'translate-x-6' : 'translate-x-0'}`} /></div>
+                    </div>
+
+                    <div className="bg-white dark:bg-[#1a1d24] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800/50 space-y-6">
+                      <div>
+                        <label className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-wider mb-3"><i className="fa-solid fa-palette mr-2"></i> Chat Accent</label>
+                        <div className="flex flex-wrap gap-3">
+                          {THEMES.colors.map(c => (
+                            <button key={c.value} onClick={() => setChatColor(c.value)} className={`w-10 h-10 rounded-full shadow-md transition-transform hover:scale-110 ${c.class} ${chatColor === c.value ? 'ring-4 ring-offset-2 ring-gray-300 dark:ring-offset-[#1a1d24] dark:ring-gray-600 scale-110' : ''}`} title={c.name}></button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-red-50 dark:bg-red-500/5 rounded-2xl border border-red-100 dark:border-red-500/10 overflow-hidden">
+                      <button onClick={() => { if(confirm("Wipe all messages globally?")) { messages.forEach(m => window.Firebase.deleteDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', m.id))); closeCurrentModal(); } }} className="w-full flex items-center p-4 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 transition-colors text-left border-b border-red-100 dark:border-red-500/10">
+                        <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mr-4"><i className="fa-solid fa-trash-can"></i></div>
+                        <div><div className="font-bold">Clear Chat History</div><div className="text-xs opacity-80">Deletes for everyone forever</div></div>
+                      </button>
+                      <button onClick={() => { setUser(null); window.safeStorage.rem('chat_user'); closeCurrentModal(); }} className="w-full flex items-center p-4 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 transition-colors text-left">
+                        <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mr-4"><i className="fa-solid fa-right-from-bracket"></i></div>
+                        <div className="font-bold">Logout & Switch User</div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <button onClick={openSettings} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i className="fa-solid fa-gear text-lg"></i></button>
+          )}
+
+          <header className="absolute top-0 w-full glass-header z-20 px-4 py-2.5 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => openModal('profile')}>
+              <Avatar name={partnerName} imgUrl={partnerDp} isOnline={partnerStatus.online && Date.now() - partnerStatus.lastActive < 60000} size="md" colorClass={avatarColor} />
+              <div className="flex flex-col">
+                <span className="font-semibold text-[17px] leading-tight group-hover:opacity-70 transition-opacity">{partnerName}</span>
+                <span className={`text-[13px] leading-tight ${statusText === 'online' || statusText === 'typing...' ? 'text-blue-500' : 'text-gray-500'}`}>{statusText}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <button onClick={() => openModal('calendar')} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"><i className="fa-regular fa-calendar-days text-xl"></i></button>
+              <button onClick={() => openModal('settings')} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors p-3"><i className="fa-solid fa-ellipsis-vertical text-2xl"></i></button>
+            </div>
           </header>
 
-          {/* CHAT FEED */}
-          <main ref={chatRef} className={`flex-1 overflow-y-auto p-3 sm:p-5 space-y-3 custom-scrollbar relative z-10 bg-cover bg-center ${wallpaper} ${!wallpaper ? (isDark ? 'bg-[#0f1115]' : 'bg-[#e5ddd5]') : ''}`}>
-            
-            <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
-              <Avatar name={partnerName} size="lg" colorClass={avatarColor} />
-              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white bg-white/50 dark:bg-black/50 px-3 py-1 rounded-xl backdrop-blur-sm">{partnerName}</h2>
-              <p className="text-[10px] font-bold text-gray-600 dark:text-gray-400 bg-gray-200/80 dark:bg-gray-800/80 px-3 py-1.5 rounded-full backdrop-blur-md shadow-sm"><i className="fa-solid fa-lock mr-1.5 text-amber-500"></i>Messages end-to-end synced</p>
-            </div>
-
+          <main ref={chatRef} className={`flex-1 overflow-y-auto px-4 pb-4 pt-[88px] custom-scrollbar relative z-10 bg-ios-light dark:bg-ios-dark`}>
             {grouped.map((item, i) => {
-              if (item.type === 'date') return <div key={item.id} className="flex justify-center my-5"><span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 shadow-sm backdrop-blur-sm">{getDateLabel(item.val)}</span></div>;
+              if (item.type === 'date') return <div key={item.id} className="flex justify-center my-6"><span className="text-[12px] font-medium px-3 py-1 rounded-full bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-400">{getDateLabel(item.val)}</span></div>;
 
               const msg = item;
               const isMe = msg.sender === user;
@@ -559,91 +863,107 @@
               
               const prev = i > 0 && grouped[i-1].type === 'msg' ? grouped[i-1] : null;
               const next = i < grouped.length - 1 && grouped[i+1].type === 'msg' ? grouped[i+1] : null;
-              const isFirst = !prev || prev.sender !== msg.sender;
-              const isLast = !next || next.sender !== msg.sender;
+              const isFirst = !prev || prev.sender !== msg.sender || (new Date(msg.timestamp) - new Date(prev.timestamp) > 300000); 
+              const isLast = !next || next.sender !== msg.sender || (new Date(next.timestamp) - new Date(msg.timestamp) > 300000);
 
-              const bgClass = isMe ? `bg-${chatColor}-500 text-white` : (isDark ? 'bg-[#202c33] text-gray-100' : 'bg-white text-gray-900 shadow-sm');
-              let rounded = 'rounded-[16px]';
-              if (isMe) { if (!isFirst) rounded += ' rounded-tr-[4px]'; if (!isLast) rounded += ' rounded-br-[4px]'; }
-              else { if (!isFirst) rounded += ' rounded-tl-[4px]'; if (!isLast) rounded += ' rounded-bl-[4px]'; }
+              const bgClass = isMe ? `bg-${chatColor}-500 text-white` : 'bg-[#e9e9eb] dark:bg-[#262629] text-gray-900 dark:text-gray-100';
+              
+              let rounded = 'rounded-[20px]'; 
+              if (isMe) { 
+                if (!isFirst) rounded += ' rounded-tr-[5px]'; 
+                if (!isLast) rounded += ' rounded-br-[5px]'; 
+              } else { 
+                if (!isFirst) rounded += ' rounded-tl-[5px]'; 
+                if (!isLast) rounded += ' rounded-bl-[5px]'; 
+              }
 
               return (
-                <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} ${!isLast ? 'mb-[2px]' : 'mb-3'}`}>
-                  <div className={`flex items-end gap-1.5 max-w-[85%] sm:max-w-[75%] relative group`}>
+                <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} ${isLast ? 'mb-3' : 'mb-[2px]'}`}>
+                  <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[75%] relative group`}>
                     
                     <div className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center ${isMe ? 'order-1 pr-1' : 'order-2 pl-1'}`}>
-                      <button onClick={(e) => { e.stopPropagation(); setActiveMenu(showMenu ? null : msg.id); }} className="w-6 h-6 rounded-full flex items-center justify-center text-gray-500 bg-white/80 dark:bg-gray-800/80 shadow-sm backdrop-blur-sm"><i className="fa-solid fa-chevron-down text-[10px]"></i></button>
+                      <button onClick={(e) => { e.stopPropagation(); setActiveMenu(showMenu ? null : msg.id); }} className="w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"><i className="fa-solid fa-ellipsis-vertical text-sm"></i></button>
                     </div>
 
                     {showMenu && (
-                      <div className={`absolute ${isLast ? 'bottom-full mb-1' : 'top-0 mt-6'} ${isMe ? 'right-0' : 'left-0'} z-50 flex flex-col p-1.5 rounded-2xl shadow-xl bg-white dark:bg-[#1a1d24] border border-gray-100 dark:border-gray-800 w-48 animate-fade-in`} onClick={e=>e.stopPropagation()}>
-                        <div className="flex items-center justify-between p-1.5 bg-gray-50 dark:bg-[#0f1115] rounded-xl mb-1 border border-gray-100 dark:border-gray-800">
-                          {EMOJIS.quick.map(em => (<button key={em} onClick={() => handleReaction(msg.id, em, msg.reactions||[])} className="text-xl hover:scale-110 transition-transform">{em}</button>))}
+                      <div className={`absolute ${isLast ? 'bottom-full mb-2' : 'top-0 mt-8'} ${isMe ? 'right-0' : 'left-0'} z-50 flex flex-col p-1.5 rounded-2xl shadow-xl bg-white dark:bg-[#1c1c1e] border border-gray-100 dark:border-white/10 w-56 animate-fade-in origin-${isMe?'bottom-right':'bottom-left'}`} onClick={e=>e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-black/50 rounded-xl mb-1.5">
+                          {EMOJIS.quick.map(em => (<button key={em} onClick={() => handleReaction(msg.id, em, msg.reactions||[])} className="text-xl hover:scale-125 transition-transform origin-bottom">{em}</button>))}
                         </div>
-                        <div className="flex flex-col space-y-0.5">
-                          <button onClick={() => { setReplyingTo(msg); setActiveMenu(null); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 text-left"><i className="fa-solid fa-reply text-gray-400 w-4"></i> Reply</button>
-                          {msg.text && <button onClick={() => { navigator.clipboard.writeText(msg.text); setActiveMenu(null); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 text-left"><i className="fa-solid fa-copy text-gray-400 w-4"></i> Copy</button>}
-                          {isMe && msg.text && !msg.image && (!msg.images || msg.images.length === 0) && !msg.audio && <button onClick={() => { setEditingMsg(msg); setInput(msg.text); setActiveMenu(null); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 text-left"><i className="fa-solid fa-pen text-gray-400 w-4"></i> Edit</button>}
-                          {isMe && <><div className="h-px bg-gray-100 dark:bg-gray-800 my-0.5"></div><button onClick={() => { window.Firebase.deleteDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', msg.id)); setActiveMenu(null); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-sm font-semibold text-red-500 text-left"><i className="fa-solid fa-trash w-4"></i> Delete</button></>}
+                        <div className="flex flex-col">
+                          <button onClick={() => { setReplyingTo(msg); setActiveMenu(null); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl text-[15px] font-medium"><i className="fa-solid fa-reply text-gray-400 w-4"></i> Reply</button>
+                          {msg.text && <button onClick={() => { navigator.clipboard.writeText(msg.text); setActiveMenu(null); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl text-[15px] font-medium"><i className="fa-regular fa-copy text-gray-400 w-4"></i> Copy</button>}
+                          {isMe && msg.text && !msg.image && (!msg.images || msg.images.length === 0) && !msg.audio && !msg.doc && <button onClick={() => { setEditingMsg(msg); setInput(msg.text); setActiveMenu(null); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl text-[15px] font-medium"><i className="fa-solid fa-pen text-gray-400 w-4"></i> Edit</button>}
+                          {isMe && <div className="h-px bg-gray-100 dark:bg-white/10 my-1"></div>}
+                          {isMe && <button onClick={() => { window.Firebase.deleteDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'messages', msg.id)); setActiveMenu(null); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-[15px] font-medium text-red-500"><i className="fa-solid fa-trash-can w-4"></i> Delete</button>}
                         </div>
                       </div>
                     )}
 
-                    <div className={`flex flex-col px-3 py-2 text-[15px] relative ${bgClass} ${rounded}`} style={{ wordBreak: 'break-word' }} onDoubleClick={() => handleReaction(msg.id, '❤️', msg.reactions||[])}>
+                    <div className={`flex flex-col relative ${bgClass} ${rounded} transition-all shadow-sm`} style={{ wordBreak: 'break-word' }} onDoubleClick={() => handleReaction(msg.id, '❤️', msg.reactions||[])}>
                       
-                      {msg.replyTo && (
-                        <div className={`mb-1 pl-2.5 border-l-4 text-sm rounded-r-lg py-1 px-2 opacity-90 ${isMe ? 'border-white/60 bg-black/10' : 'border-['+chatColor+'-500] bg-gray-100 dark:bg-gray-800'}`}>
-                          <div className={`font-bold text-[11px] mb-0.5 ${isMe ? 'text-white' : 'text-blue-500 dark:text-blue-400'}`}>{msg.replyTo.sender}</div>
-                          <div className="line-clamp-1 text-xs">{formatTextWithLinks(msg.replyTo.text)}</div>
-                        </div>
-                      )}
-
-                      {/* Legacy Single Image Support */}
-                      {msg.image && !msg.images && (
-                        <div className="cursor-zoom-in relative group/img" onClick={() => openImage(msg.image)}>
-                          <img src={msg.image} className={`max-w-full rounded-[10px] object-cover ${msg.text ? 'mb-1.5' : ''}`} style={{ maxHeight: '280px', minHeight: '100px' }} loading="lazy" />
-                          <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors rounded-[10px] flex items-center justify-center"><i className="fa-solid fa-expand text-white text-2xl opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-md"></i></div>
-                        </div>
-                      )}
-
-                      {/* Multiple Images Grid */}
-                      {msg.images && msg.images.length > 0 && (
-                        <div className={`grid gap-1 ${msg.text ? 'mb-1.5' : ''} ${msg.images.length >= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                           {msg.images.map((img, idx) => (
-                             <div key={idx} className={`cursor-zoom-in relative group/img ${msg.images.length === 3 && idx === 0 ? 'col-span-2' : ''}`} onClick={() => openImage(img)}>
-                               <img src={img} className="w-full rounded-[6px] object-cover" style={{ aspectRatio: msg.images.length === 1 ? 'auto' : '1', maxHeight: msg.images.length === 1 ? '280px' : 'auto', minHeight: '100px' }} loading="lazy" />
-                               <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors rounded-[6px] flex items-center justify-center"><i className="fa-solid fa-expand text-white text-xl opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-md"></i></div>
-                             </div>
-                           ))}
-                        </div>
-                      )}
-
-                      {msg.audio && (
-                        <div className={`flex items-center gap-2 p-1 rounded-full ${msg.text ? 'mb-1.5' : ''} ${isMe ? 'bg-black/10' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-white text-blue-500' : 'bg-blue-500 text-white'}`}><i className="fa-solid fa-microphone text-sm"></i></div>
-                          <audio controls src={msg.audio} className="h-8 w-40 sm:w-48 outline-none" style={{ filter: isDark && !isMe ? 'invert(0.9) hue-rotate(180deg)' : (isMe ? 'invert(1) hue-rotate(180deg) brightness(1.5)' : 'none') }}></audio>
-                        </div>
-                      )}
-                      
-                      {msg.text && <div className="leading-snug whitespace-pre-wrap font-medium">{formatTextWithLinks(msg.text)}</div>}
-                      
-                      <div className={`text-[10px] mt-1 flex justify-end items-center gap-1 font-semibold ${isMe ? 'text-white/80' : 'text-gray-400 dark:text-gray-500'}`}>
-                        {msg.isEdited && <span className="opacity-70 font-normal italic mr-0.5">(edited)</span>}
-                        <span>{formatTime(msg.timestamp)}</span>
-                        {isMe && (
-                          <span className="flex items-center ml-0.5">
-                            {msg.status === 'sent' && <i className="fa-solid fa-check text-[10px] opacity-70"></i>}
-                            {msg.status === 'delivered' && <i className="fa-solid fa-check-double text-[10px] opacity-90"></i>}
-                            {msg.status === 'read' && <i className="fa-solid fa-check-double text-[10px] text-[#53bdeb] drop-shadow-sm"></i>}
-                          </span>
+                      <div className={`px-3.5 py-2 min-w-[70px] ${msg.image || (msg.images&&msg.images.length>0) ? 'p-1' : ''}`}>
+                        
+                        {msg.replyTo && (
+                          <div className={`mb-2 pl-3 border-l-2 text-sm rounded-r-md py-1 px-2 ${isMe ? 'border-white bg-black/10' : 'border-[#0a84ff] bg-black/5 dark:bg-white/5'}`}>
+                            <div className={`font-semibold text-[13px] mb-0.5 ${isMe ? 'text-white' : 'text-[#0a84ff]'}`}>{msg.replyTo.sender}</div>
+                            <div className="line-clamp-2 text-[14px] opacity-90">{formatTextWithLinks(msg.replyTo.text)}</div>
+                          </div>
                         )}
+
+                        {msg.doc && (
+                          <div className={`flex items-center gap-3 p-2 rounded-xl mb-1 ${isMe ? 'bg-black/10' : 'bg-white dark:bg-black/40'}`}>
+                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-2xl shrink-0 ${isMe ? 'bg-white text-current opacity-80' : 'bg-[#0a84ff] text-white'}`}><i className="fa-solid fa-file-lines"></i></div>
+                             <div className="flex-1 min-w-0 pr-2">
+                               <div className="font-semibold text-[15px] truncate leading-tight">{msg.doc.name}</div>
+                               <div className="text-xs opacity-70 mt-0.5">{formatBytes(msg.doc.size)}</div>
+                             </div>
+                             <a href={msg.doc.data} download={msg.doc.name} className={`w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity ${isMe ? 'bg-white text-gray-900' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}><i className="fa-solid fa-arrow-down text-sm"></i></a>
+                          </div>
+                        )}
+
+                        {(msg.image || (msg.images && msg.images.length > 0)) && (
+                          <div className={`grid gap-[2px] rounded-[18px] overflow-hidden ${msg.text ? 'mb-1' : ''} ${(msg.images && msg.images.length >= 2) ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                             {(msg.images || [msg.image]).map((img, idx) => (
+                               <div key={idx} className={`cursor-zoom-in relative group/img ${((msg.images && msg.images.length === 3) || (!msg.images && msg.image)) && idx === 0 ? 'col-span-full' : ''}`} onClick={() => openModal('image', img)}>
+                                 <img src={img} className="w-full object-cover" style={{ aspectRatio: (msg.images && msg.images.length > 1) ? '1' : 'auto', maxHeight: (msg.images && msg.images.length > 1) ? 'auto' : '300px', minHeight: '120px' }} loading="lazy" />
+                               </div>
+                             ))}
+                          </div>
+                        )}
+
+                        {msg.audio && (
+                          <div className={`flex items-center gap-3 p-1 rounded-full ${msg.text ? 'mb-2' : ''} ${isMe ? 'bg-black/10' : 'bg-black/5 dark:bg-white/5'}`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-white text-current opacity-80' : 'bg-[#0a84ff] text-white'}`}><i className="fa-solid fa-play text-sm ml-0.5"></i></div>
+                            <audio controls src={msg.audio} className="h-8 w-44 outline-none opacity-80" style={{ filter: isDark && !isMe ? 'invert(0.9) hue-rotate(180deg)' : (isMe ? 'invert(1) hue-rotate(180deg) brightness(1.5)' : 'none') }}></audio>
+                          </div>
+                        )}
+                        
+                        {msg.text && <div className={`leading-[1.35] whitespace-pre-wrap`}>{formatTextWithLinks(msg.text)}</div>}
+                        
+                        <div className={`text-[11px] flex justify-end items-center gap-1 font-medium select-none mt-1 ${isMe ? 'text-white/80' : 'text-gray-500'}`}>
+                          {msg.isEdited && <span className="opacity-70 font-normal italic mr-1">edited</span>}
+                          <span>{formatTime(msg.timestamp)}</span>
+                          {isMe && (
+                            <span className="flex items-center ml-0.5 relative w-3.5 h-3.5">
+                              {msg.status === 'sent' && <i className="fa-solid fa-check text-[10px] opacity-70 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>}
+                              {msg.status === 'delivered' && <i className="fa-solid fa-check-double text-[10px] opacity-90 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>}
+                              {msg.status === 'read' && (
+                                <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[14px] h-[14px] drop-shadow-sm" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M2.5 12L7.5 17L18 6.5" stroke="#95e263" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <path d="M7.5 12L12.5 17L23 6.5" stroke="#6dc235" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {(msg.reactions && msg.reactions.length > 0) && (
-                        <div className={`absolute -bottom-3 ${isMe ? 'right-0' : 'left-0'} bg-white dark:bg-[#1a1d24] rounded-full px-1.5 py-0.5 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-1 text-[11px] z-10`}>
+                        <div className={`absolute -bottom-3 ${isMe ? 'right-2' : 'left-2'} bg-white dark:bg-[#1c1c1e] rounded-full px-2 py-0.5 shadow-sm border border-gray-100 dark:border-white/5 flex items-center gap-1.5 text-[13px] z-10`}>
                           {Array.from(new Set(msg.reactions)).map(emoji => {
                             const count = msg.reactions.filter(r => r === emoji).length;
-                            return <span key={emoji} className="flex items-center gap-0.5">{emoji} {count > 1 && <span className="text-[8px] font-bold text-gray-500">{count}</span>}</span>
+                            return <span key={emoji} className="flex items-center gap-1">{emoji} {count > 1 && <span className="text-[10px] font-bold text-gray-500">{count}</span>}</span>
                           })}
                         </div>
                       )}
@@ -654,88 +974,104 @@
             })}
 
             {partnerStatus.online && partnerStatus.typing && (
-              <div className="flex items-start mb-2 animate-fade-in">
-                <div className="bg-white dark:bg-[#202c33] shadow-sm border border-gray-100 dark:border-gray-800/50 rounded-[16px] rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse"></div><div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-75"></div><div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-150"></div>
+              <div className="flex items-start mb-4 animate-fade-in">
+                <div className={`bg-[#e9e9eb] dark:bg-[#262629] rounded-[20px] rounded-bl-[5px] px-4 py-3 flex items-center gap-1`}>
+                  <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.15s'}}></div>
+                  <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.3s'}}></div>
                 </div>
               </div>
             )}
+            <div className="h-4"></div>
           </main>
 
-          {/* INPUT BAR */}
-          <footer className="bg-white/90 dark:bg-[#1a1d24]/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shrink-0 p-2 sm:p-3 relative z-30" onClick={e=>e.stopPropagation()}>
+          <footer className="glass-footer shrink-0 px-3 py-2.5 pb-safe z-30" onClick={e=>e.stopPropagation()}>
             
             {(editingMsg || replyingTo) && (
-              <div className={`mb-2 px-3 py-2 bg-gray-50 dark:bg-[#0f1115] rounded-xl flex items-center justify-between shadow-sm animate-slide-up border-l-4 ${editingMsg ? 'border-green-500' : 'border-blue-500'}`}>
-                <div className="flex flex-col truncate pr-2">
-                  <span className={`text-xs font-bold ${editingMsg ? 'text-green-500' : 'text-blue-500'}`}>{editingMsg ? 'Editing Message' : `Replying to ${(replyingTo||{}).sender}`}</span>
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300 truncate">{(editingMsg||replyingTo||{}).text || 'Media'}</span>
+              <div className={`mb-2 px-3 py-2 bg-black/5 dark:bg-white/5 rounded-[18px] flex items-center justify-between animate-slide-up border-l-[3px] ${editingMsg ? 'border-green-500' : 'border-[#0a84ff]'}`}>
+                <div className="flex flex-col truncate pr-4">
+                  <span className={`text-[13px] font-semibold mb-0.5 ${editingMsg ? 'text-green-500' : 'text-[#0a84ff]'}`}>{editingMsg ? 'Edit Message' : `Replying to ${(replyingTo||{}).sender}`}</span>
+                  <span className="text-[14px] text-gray-600 dark:text-gray-300 truncate">{(editingMsg||replyingTo||{}).text || 'Attachment'}</span>
                 </div>
-                <button onClick={() => { setEditingMsg(null); setReplyingTo(null); setInput(""); }} className="w-7 h-7 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full text-gray-500"><i className="fa-solid fa-xmark text-sm"></i></button>
+                <button onClick={() => { setEditingMsg(null); setReplyingTo(null); setInput(""); }} className="w-7 h-7 flex items-center justify-center bg-black/10 dark:bg-white/10 rounded-full text-gray-500"><i className="fa-solid fa-xmark text-sm"></i></button>
               </div>
             )}
 
-            {/* IMAGE ATTACHMENT PREVIEW TRAY */}
+            {pendingDoc && (
+              <div className="mb-2 px-3 py-2 bg-black/5 dark:bg-white/5 rounded-[18px] flex items-center justify-between animate-slide-up">
+                 <div className="flex items-center min-w-0 pr-2">
+                   <div className="w-8 h-8 rounded-lg bg-[#0a84ff]/10 text-[#0a84ff] flex items-center justify-center text-lg mr-3"><i className="fa-solid fa-file"></i></div>
+                   <div className="flex flex-col truncate">
+                     <span className="text-[14px] font-semibold truncate text-gray-900 dark:text-white">{pendingDoc.name}</span>
+                     <span className="text-[12px] text-gray-500">{formatBytes(pendingDoc.size)}</span>
+                   </div>
+                 </div>
+                 <button onClick={() => setPendingDoc(null)} className="w-7 h-7 flex items-center justify-center bg-black/10 dark:bg-white/10 rounded-full text-gray-500"><i className="fa-solid fa-xmark text-sm"></i></button>
+              </div>
+            )}
+
             {pendingImages.length > 0 && (
-              <div className="mb-2 p-2 bg-white dark:bg-[#0f1115] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm animate-slide-up flex flex-wrap gap-2 overflow-y-auto max-h-32 custom-scrollbar">
+              <div className="mb-2 p-2 bg-black/5 dark:bg-white/5 rounded-[18px] flex flex-wrap gap-2 overflow-y-auto max-h-32 custom-scrollbar animate-slide-up">
                 {pendingImages.map((img, idx) => (
-                  <div key={idx} className="relative w-[60px] h-[60px] group shrink-0">
-                    <img src={img} className="w-full h-full object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
-                    <button 
-                      type="button" 
-                      onClick={() => setPendingImages(prev => prev.filter((_, i) => i !== idx))} 
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[10px] shadow-md transition-colors"
-                    >
-                      <i className="fa-solid fa-xmark"></i>
-                    </button>
+                  <div key={idx} className="relative w-16 h-16 group shrink-0">
+                    <img src={img} className="w-full h-full object-cover rounded-xl border border-black/10 dark:border-white/10" />
+                    <button type="button" onClick={() => setPendingImages(prev => prev.filter((_, i) => i !== idx))} className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-white rounded-full flex items-center justify-center text-[10px] shadow-sm"><i className="fa-solid fa-xmark"></i></button>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="flex items-end gap-1.5">
+            <div className="flex items-end gap-2">
               {!editingMsg && (
-                <div className="relative mb-[3px] group">
-                  <button type="button" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"><i className="fa-solid fa-plus text-xl"></i></button>
-                  <div className="absolute bottom-full left-0 mb-2 flex-col gap-1 p-1.5 bg-white dark:bg-[#1a1d24] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 hidden group-hover:flex animate-slide-up z-50">
-                    <button type="button" onClick={() => camRef.current?.click()} className="flex items-center gap-3 p-2.5 hover:bg-gray-50 dark:hover:bg-[#0f1115] rounded-xl text-sm font-semibold whitespace-nowrap"><div className="w-6 flex justify-center"><i className="fa-solid fa-camera text-blue-500 text-xl"></i></div> Camera</button>
-                    <button type="button" onClick={() => fileRef.current?.click()} className="flex items-center gap-3 p-2.5 hover:bg-gray-50 dark:hover:bg-[#0f1115] rounded-xl text-sm font-semibold whitespace-nowrap"><div className="w-6 flex justify-center"><i className="fa-solid fa-image text-purple-500 text-xl"></i></div> Photo</button>
-                  </div>
+                <div className="relative mb-0.5">
+                  <button type="button" onClick={() => setShowAttachmentMenu(!showAttachmentMenu)} className={`w-9 h-9 flex items-center justify-center rounded-full transition-all text-blue-500 hover:bg-black/5 dark:hover:bg-white/10`}><i className={`fa-solid fa-plus text-xl transition-transform ${showAttachmentMenu ? 'rotate-45' : ''}`}></i></button>
+                  
+                  {showAttachmentMenu && (
+                    <div className="absolute bottom-full left-0 mb-3 flex flex-col gap-3 animate-slide-up z-50 bg-white dark:bg-[#1c1c1e] p-2.5 rounded-[24px] shadow-xl border border-gray-100 dark:border-white/5">
+                      <button type="button" onClick={() => { setShowAttachmentMenu(false); camRef.current?.click(); }} className="flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center text-xl mb-1 group-hover:scale-105 transition-transform"><i className="fa-solid fa-camera"></i></div><span className="text-[10px] font-semibold text-gray-500">Camera</span></button>
+                      <button type="button" onClick={() => { setShowAttachmentMenu(false); fileRef.current?.click(); }} className="flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center text-xl mb-1 group-hover:scale-105 transition-transform"><i className="fa-regular fa-image"></i></div><span className="text-[10px] font-semibold text-gray-500">Photo</span></button>
+                      <button type="button" onClick={() => { setShowAttachmentMenu(false); docRef.current?.click(); }} className="flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center text-xl mb-1 group-hover:scale-105 transition-transform"><i className="fa-solid fa-file-lines"></i></div><span className="text-[10px] font-semibold text-gray-500">Document</span></button>
+                    </div>
+                  )}
                 </div>
               )}
 
-              <div className={`flex-1 flex items-end gap-1 rounded-3xl border transition-colors ${isDark ? 'bg-[#0f1115] border-gray-700' : 'bg-gray-50 border-gray-300'}`}>
+              <div className={`flex-1 flex items-end rounded-[20px] transition-colors border ${isDark ? 'bg-[#1c1c1e] border-[#1c1c1e]' : 'bg-white border-gray-200'}`}>
                 {isRecording ? (
-                  <div className="flex-1 h-[44px] flex items-center justify-between px-4">
-                    <div className="flex items-center gap-3">
+                  <div className="flex-1 h-10 flex items-center justify-between px-4">
+                    <div className="flex items-center gap-2">
                       <div className="relative flex items-center justify-center"><div className="w-2.5 h-2.5 bg-red-500 rounded-full relative z-10"></div><div className="w-2.5 h-2.5 bg-red-500 rounded-full absolute recording-pulse"></div></div>
-                      <span className="text-red-500 font-bold font-mono">00:{recordTime < 10 ? `0${recordTime}` : recordTime}</span>
+                      <span className="text-red-500 font-bold font-mono tracking-wide text-sm">00:{recordTime < 10 ? `0${recordTime}` : recordTime}</span>
                     </div>
-                    <button type="button" onClick={cancelVoice} className="text-xs font-bold text-gray-400 hover:text-red-500 uppercase tracking-wide px-2 transition-colors">Cancel</button>
+                    <button type="button" onClick={cancelVoice} className="text-[13px] font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">Cancel</button>
                   </div>
                 ) : (
                   <>
-                    <div className="relative pb-1 pl-1">
-                      <button type="button" onClick={() => { setShowEmojis(!showEmojis); setShowGifs(false); }} className={`w-[36px] h-[36px] flex items-center justify-center rounded-full transition-colors ${showEmojis ? 'text-blue-500 bg-blue-50 dark:bg-gray-800' : 'text-gray-400'}`}><i className="fa-regular fa-face-smile text-xl"></i></button>
+                    <textarea ref={inputRef} value={input} onChange={handleType} placeholder={editingMsg ? "Edit message..." : "Message"} className="flex-1 bg-transparent border-none text-[16px] px-4 py-[9px] outline-none resize-none m-0 leading-snug text-gray-900 dark:text-gray-100 placeholder-gray-400 font-normal" style={{ height: '40px', minHeight: '40px', maxHeight: '140px' }} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPayload({}); } }} />
+                    
+                    <div className="flex items-center pb-1 pr-2 shrink-0 gap-1.5">
+                      <button type="button" onClick={() => { setShowEmojis(!showEmojis); setShowGifs(false); setShowAttachmentMenu(false); }} className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors text-gray-400 hover:text-blue-500 ${showEmojis ? 'bg-blue-500/10 text-blue-500' : ''}`}><i className="fa-regular fa-face-smile text-[19px]"></i></button>
+                      
+                      <button type="button" onClick={() => { setShowGifs(!showGifs); setShowEmojis(false); setShowAttachmentMenu(false); }} className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors text-gray-400 hover:text-blue-500 ${showGifs ? 'bg-[#0a84ff]/10 text-[#0a84ff]' : ''}`}>
+                         <div className="border-[2px] border-current rounded-[4px] px-[3px] text-[8px] font-black uppercase mt-0.5">GIF</div>
+                      </button>
+                      
                       {showEmojis && (
-                        <div className="absolute bottom-12 left-0 w-64 bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-800 shadow-2xl rounded-2xl p-3 grid grid-cols-5 gap-2 animate-slide-up z-50 custom-scrollbar max-h-64 overflow-y-auto">
-                          {EMOJIS.common.map((e, i) => <button key={i} type="button" onClick={() => handleType({target:{value: input + e}})} className="text-2xl p-1.5 hover:bg-gray-100 dark:hover:bg-[#0f1115] rounded-xl transition-colors">{e}</button>)}
+                        <div className="absolute bottom-14 right-10 shadow-2xl rounded-[24px] p-4 w-[280px] h-[300px] flex flex-col gap-2 z-[70] bg-white dark:bg-[#1c1c1e] border border-gray-100 dark:border-white/5 animate-slide-up">
+                           <div className="grid grid-cols-5 gap-2 overflow-y-auto custom-scrollbar">
+                              {EMOJIS.common.map((e, i) => <button key={i} type="button" onClick={() => handleType({target:{value: input + e}})} className="text-3xl p-1 hover:scale-125 transition-transform origin-bottom">{e}</button>)}
+                           </div>
                         </div>
                       )}
-                    </div>
-                    
-                    <textarea ref={inputRef} value={input} onChange={handleType} placeholder={editingMsg ? "Edit message..." : (pendingImages.length > 0 ? "Add a caption..." : "Message")} className="flex-1 bg-transparent border-none text-[15px] px-1 py-[11px] outline-none resize-none m-0 leading-tight text-gray-900 dark:text-gray-100 placeholder-gray-500 font-medium" style={{ height: '44px', minHeight: '44px', maxHeight: '120px' }} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPayload({}); } }} />
-                    
-                    <div className="relative pb-1 pr-1">
-                      <button type="button" onClick={() => { setShowGifs(!showGifs); setShowEmojis(false); }} className={`w-[36px] h-[36px] flex items-center justify-center rounded-full transition-colors ${showGifs ? 'text-blue-500 bg-blue-50 dark:bg-gray-800' : 'text-gray-400'}`}><div className="border-[2px] border-current rounded-[4px] px-[3px] text-[8px] font-black uppercase mt-0.5">GIF</div></button>
+
                       {showGifs && (
-                        <div className="absolute bottom-12 right-0 shadow-2xl rounded-2xl p-2 w-[280px] h-[300px] flex flex-col gap-2 z-[70] bg-white dark:bg-[#1a1d24] border border-gray-100 dark:border-gray-800 animate-slide-up">
-                          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700">
+                        <div className="absolute bottom-14 right-0 shadow-2xl rounded-[24px] p-2 w-[300px] h-[340px] flex flex-col gap-2 z-[70] bg-white dark:bg-[#1c1c1e] border border-gray-100 dark:border-white/5 animate-slide-up">
+                          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 dark:bg-black/50">
                             <i className="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
-                            <input type="text" placeholder="Search Tenor..." value={gifSearch} onChange={(e) => setGifSearch(e.target.value)} className="bg-transparent border-none outline-none w-full text-sm font-medium text-gray-900 dark:text-white" />
+                            <input type="text" placeholder="Search GIFs..." value={gifSearch} onChange={(e) => setGifSearch(e.target.value)} className="bg-transparent border-none outline-none w-full text-sm font-medium text-gray-900 dark:text-white" />
                           </div>
                           <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-1.5 custom-scrollbar pr-1">
-                            {isSearchingGifs ? <div className="col-span-2 flex items-center justify-center text-gray-400"><i className="fa-solid fa-spinner animate-spin text-2xl"></i></div> : tenorGifs.map((url, i) => (<img key={i} src={url} onClick={() => sendPayload({ image: url })} className="rounded-lg h-24 w-full object-cover cursor-pointer hover:opacity-80 transition-opacity" />))}
+                            {isSearchingGifs ? <div className="col-span-2 flex items-center justify-center text-gray-400"><i className="fa-solid fa-circle-notch animate-spin text-2xl"></i></div> : tenorGifs.map((url, i) => (<img key={i} src={url} onClick={() => sendPayload({ image: url })} className="rounded-lg h-24 w-full object-cover cursor-pointer hover:opacity-80" />))}
                           </div>
                         </div>
                       )}
@@ -744,28 +1080,25 @@
                 )}
               </div>
               
-              <div className="mb-[3px] shrink-0">
+              <div className="mb-0.5 shrink-0">
                 {!hasContentToSend && !isRecording ? (
-                  <button type="button" onClick={startVoice} className="w-[38px] h-[38px] flex items-center justify-center text-gray-500 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"><i className="fa-solid fa-microphone text-lg"></i></button>
+                  <button type="button" onClick={startVoice} className="w-9 h-9 flex items-center justify-center text-blue-500 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-all"><i className="fa-solid fa-microphone text-lg"></i></button>
                 ) : isRecording ? (
-                  <button type="button" onClick={stopVoice} className="w-[38px] h-[38px] flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-transform hover:scale-105"><i className="fa-solid fa-paper-plane text-sm -ml-0.5"></i></button>
+                  <button type="button" onClick={stopVoice} className="w-9 h-9 flex items-center justify-center bg-blue-500 text-white rounded-full transition-transform hover:scale-110"><i className="fa-solid fa-arrow-up text-sm"></i></button>
                 ) : (
-                  <button type="button" onClick={(e) => sendPayload({})} className={`w-[38px] h-[38px] flex items-center justify-center rounded-full shadow-md text-white transition-transform hover:scale-105 ${editingMsg ? 'bg-green-500' : chatColor === 'blue' ? 'bg-blue-500' : chatColor === 'pink' ? 'bg-pink-500' : 'bg-gray-900 dark:bg-gray-100 dark:text-gray-900'}`}>
-                    {editingMsg ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-paper-plane text-sm -ml-0.5"></i>}
+                  <button type="button" onClick={(e) => sendPayload({})} className={`w-9 h-9 flex items-center justify-center rounded-full transition-transform hover:scale-110 text-white ${editingMsg ? 'bg-green-500' : `bg-${chatColor}-500`}`}>
+                    {editingMsg ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-arrow-up text-sm"></i>}
                   </button>
                 )}
               </div>
             </div>
           </footer>
-
         </div>
       );
     }
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    root.render(<ErrorBoundary><App /></ErrorBoundary>);
   </script>
 </body>
 </html>
-
-
