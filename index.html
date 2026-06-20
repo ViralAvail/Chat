@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Premium Messenger V3</title>
+  <title>Direct Messages</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,7 +50,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <style>
-    body, html { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; background-color: #000; touch-action: pan-x pan-y; }
+    body, html { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; touch-action: pan-x pan-y; }
     .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 10px; }
@@ -73,7 +73,7 @@
     .draw-canvas { touch-action: none; background-color: #1c1c1e; }
   </style>
 </head>
-<body class="text-gray-900 dark:text-gray-100 overflow-hidden font-sans antialiased selection:bg-blue-500/30 bg-ios-light dark:bg-ios-dark">
+<body class="text-gray-900 dark:text-gray-100 overflow-hidden font-sans antialiased selection:bg-blue-500/30 bg-[#f0f2f5] dark:bg-[#0a0a0c]">
   
   <script>
     window.safeStorage = {
@@ -622,7 +622,7 @@
       else if (partnerStatus.lastActive) statusText = `last seen ${formatTime(new Date(partnerStatus.lastActive).toISOString())}`;
 
       return (
-        <div className="flex flex-col h-[100dvh] w-full sm:max-w-md lg:max-w-2xl mx-auto bg-ios-light dark:bg-ios-dark sm:border-x border-gray-200 dark:border-white/5 relative shadow-2xl overflow-hidden text-[15px]" onClick={() => { setActiveMenu(null); setShowEmojis(false); setShowGifs(false); setShowAttachmentMenu(false); }}>
+        <div className="flex flex-col h-[100dvh] md:h-[96dvh] md:my-[2dvh] md:rounded-[32px] md:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full sm:max-w-md md:max-w-3xl lg:max-w-5xl mx-auto bg-ios-light dark:bg-ios-dark sm:border-x md:border border-gray-200 dark:border-white/10 relative overflow-hidden text-[15px]" onClick={() => { setActiveMenu(null); setShowEmojis(false); setShowGifs(false); setShowAttachmentMenu(false); }}>
           
           <input type="file" ref={fileRef} onChange={handleImageUpload} onClick={e=> {if(e.target) e.target.value=null;}} accept="image/*" multiple className="hidden" />
           <input type="file" ref={camRef} onChange={handleImageUpload} onClick={e=> {if(e.target) e.target.value=null;}} accept="image/*" capture="environment" className="hidden" />
@@ -649,15 +649,15 @@
           )}
 
           {activeModal === 'draw' && (
-            <div className="absolute inset-0 z-[120] bg-[#1c1c1e] flex flex-col animate-slide-up overflow-hidden" onClick={e=>e.stopPropagation()}>
-              <div className="absolute top-0 w-full p-4 flex justify-between items-center z-10 bg-gradient-to-b from-black/60 to-transparent">
+            <div className="absolute inset-0 z-[120] bg-[#1c1c1e] md:rounded-[32px] flex flex-col animate-slide-up overflow-hidden" onClick={e=>e.stopPropagation()}>
+              <div className="absolute top-0 w-full p-4 flex justify-between items-center z-10 bg-gradient-to-b from-black/60 to-transparent md:rounded-t-[32px]">
                 <button className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur-md" onClick={closeCurrentModal}><i className="fa-solid fa-xmark"></i></button>
                 <button className="px-5 py-2 rounded-full bg-blue-500 text-white font-bold backdrop-blur-md hover:scale-105 transition-transform" onClick={() => { sendPayload({ image: canvasRef.current.toDataURL('image/jpeg', 0.8) }); closeCurrentModal(); }}>Send</button>
               </div>
               
               <canvas ref={canvasRef} className="draw-canvas w-full h-full flex-1" onPointerDown={startDraw} onPointerMove={draw} onPointerUp={stopDraw} onPointerOut={stopDraw}></canvas>
               
-              <div className="absolute bottom-0 w-full p-6 pb-safe bg-gradient-to-t from-black/80 to-transparent flex flex-col gap-4 z-10">
+              <div className="absolute bottom-0 w-full p-6 pb-safe bg-gradient-to-t from-black/80 to-transparent flex flex-col gap-4 z-10 md:rounded-b-[32px]">
                 <div className="flex items-center gap-4">
                    <i className="fa-solid fa-paintbrush text-white opacity-50"></i>
                    <input type="range" min="2" max="30" value={drawSize} onChange={e=>setDrawSize(e.target.value)} className="flex-1 accent-white" />
@@ -672,109 +672,115 @@
           )}
 
           {activeModal === 'calendar' && (
-            <div className="absolute inset-0 z-50 bg-ios-light dark:bg-ios-dark flex flex-col animate-slide-right overflow-hidden" onClick={e=>e.stopPropagation()}>
-              <div className="glass-header px-4 py-3 flex items-center shrink-0">
-                <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center text-blue-500 hover:text-blue-600 text-xl -ml-2"><i className="fa-solid fa-chevron-left"></i><span className="text-base ml-1">Back</span></button>
-                <h2 className="font-semibold text-lg ml-auto mr-auto -translate-x-4">Shared Events</h2>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
-                 <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5">
-                   <h3 className="text-sm font-bold text-gray-500 uppercase mb-3"><i className="fa-solid fa-plus mr-1.5"></i> Add New Event</h3>
-                   <input type="text" placeholder="Event Title (e.g. Movie Night)" value={newEventTitle} onChange={e=>setNewEventTitle(e.target.value)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 mb-3 outline-none focus:border-blue-500 text-sm font-medium" />
-                   <div className="flex gap-3">
-                     <input type="date" value={newEventDate} onChange={e=>setNewEventDate(e.target.value)} className="flex-1 bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 text-sm font-medium dark:[color-scheme:dark]" />
-                     <button onClick={saveCalendarEvent} className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 rounded-xl transition-colors">Save</button>
-                   </div>
-                 </div>
-
-                 <div className="space-y-2">
-                   {events.length === 0 ? <div className="text-center text-gray-400 py-10 font-medium">No upcoming events</div> : events.map(evt => (
-                     <div key={evt.id} className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex items-center justify-between">
-                       <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex flex-col items-center justify-center shrink-0">
-                           <span className="text-[10px] font-bold uppercase opacity-80 leading-none mb-0.5">{new Date(evt.date).toLocaleString('default', { month: 'short' })}</span>
-                           <span className="text-lg font-bold leading-none">{new Date(evt.date).getDate()}</span>
-                         </div>
-                         <div>
-                           <div className="font-bold text-gray-900 dark:text-white text-lg">{evt.title}</div>
-                           <div className="text-xs text-gray-500">Added by {evt.creator}</div>
-                         </div>
-                       </div>
-                       <button onClick={() => window.Firebase.deleteDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'events', evt.id))} className="w-8 h-8 text-gray-400 hover:text-red-500 transition-colors"><i className="fa-solid fa-trash-can"></i></button>
+            <div className="absolute inset-0 z-50 flex justify-end">
+              <div className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm animate-fade-in md:rounded-[32px]" onClick={closeCurrentModal}></div>
+              <div className="relative z-50 bg-ios-light dark:bg-ios-dark flex flex-col animate-slide-right overflow-hidden w-full md:w-[400px] border-l border-gray-200 dark:border-white/5 shadow-2xl md:rounded-r-[32px]" onClick={e=>e.stopPropagation()}>
+                <div className="glass-header px-4 py-3 flex items-center shrink-0">
+                  <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center text-blue-500 hover:text-blue-600 text-xl -ml-2"><i className="fa-solid fa-chevron-left"></i><span className="text-base ml-1">Back</span></button>
+                  <h2 className="font-semibold text-lg ml-auto mr-auto -translate-x-4">Shared Events</h2>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+                   <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5">
+                     <h3 className="text-sm font-bold text-gray-500 uppercase mb-3"><i className="fa-solid fa-plus mr-1.5"></i> Add New Event</h3>
+                     <input type="text" placeholder="Event Title (e.g. Movie Night)" value={newEventTitle} onChange={e=>setNewEventTitle(e.target.value)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 mb-3 outline-none focus:border-blue-500 text-sm font-medium" />
+                     <div className="flex gap-3">
+                       <input type="date" value={newEventDate} onChange={e=>setNewEventDate(e.target.value)} className="flex-1 bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 text-sm font-medium dark:[color-scheme:dark]" />
+                       <button onClick={saveCalendarEvent} className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 rounded-xl transition-colors">Save</button>
                      </div>
-                   ))}
-                 </div>
+                   </div>
+
+                   <div className="space-y-2">
+                     {events.length === 0 ? <div className="text-center text-gray-400 py-10 font-medium">No upcoming events</div> : events.map(evt => (
+                       <div key={evt.id} className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex items-center justify-between">
+                         <div className="flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex flex-col items-center justify-center shrink-0">
+                             <span className="text-[10px] font-bold uppercase opacity-80 leading-none mb-0.5">{new Date(evt.date).toLocaleString('default', { month: 'short' })}</span>
+                             <span className="text-lg font-bold leading-none">{new Date(evt.date).getDate()}</span>
+                           </div>
+                           <div>
+                             <div className="font-bold text-gray-900 dark:text-white text-lg">{evt.title}</div>
+                             <div className="text-xs text-gray-500">Added by {evt.creator}</div>
+                           </div>
+                         </div>
+                         <button onClick={() => window.Firebase.deleteDoc(window.Firebase.doc(window.Firebase.db, 'artifacts', APP_ID, 'public', 'data', 'events', evt.id))} className="w-8 h-8 text-gray-400 hover:text-red-500 transition-colors"><i className="fa-solid fa-trash-can"></i></button>
+                       </div>
+                     ))}
+                   </div>
+                </div>
               </div>
             </div>
           )}
 
           {activeModal === 'profile' && (
-            <div className="absolute inset-0 z-40 bg-ios-light dark:bg-ios-dark flex flex-col animate-slide-right overflow-hidden" onClick={e=>e.stopPropagation()}>
-              <div className="glass-header px-4 py-3 flex items-center shrink-0">
-                <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center text-blue-500 hover:text-blue-600 text-xl -ml-2"><i className="fa-solid fa-chevron-left"></i><span className="text-base ml-1">Back</span></button>
-                <h2 className="font-semibold text-lg ml-auto mr-auto -translate-x-4">Info</h2>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto custom-scrollbar">
-                <div className="flex flex-col items-center justify-center pt-8 pb-6 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/5 shadow-sm">
-                  <Avatar name={partnerName} imgUrl={partnerDp} size="lg" colorClass={avatarColor} />
-                  <h2 className="text-2xl font-bold mt-4">{partnerName}</h2>
-                  <p className={`text-sm mt-1 ${statusText==='online'||statusText==='typing...'?'text-blue-500':'text-gray-500'}`}>{statusText}</p>
-                  
-                  <div className="mt-6 w-full px-12">
-                    <button className="w-full flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 py-3 rounded-2xl font-bold transition-colors" onClick={closeCurrentModal}>
-                      <i className="fa-solid fa-comment text-lg"></i> Send Message
-                    </button>
-                  </div>
+            <div className="absolute inset-0 z-40 flex justify-end">
+              <div className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm animate-fade-in md:rounded-[32px]" onClick={closeCurrentModal}></div>
+              <div className="relative z-50 bg-ios-light dark:bg-ios-dark flex flex-col animate-slide-right overflow-hidden w-full md:w-[400px] border-l border-gray-200 dark:border-white/5 shadow-2xl md:rounded-r-[32px]" onClick={e=>e.stopPropagation()}>
+                <div className="glass-header px-4 py-3 flex items-center shrink-0">
+                  <button onClick={closeCurrentModal} className="w-10 h-10 flex items-center text-blue-500 hover:text-blue-600 text-xl -ml-2"><i className="fa-solid fa-chevron-left"></i><span className="text-base ml-1">Back</span></button>
+                  <h2 className="font-semibold text-lg ml-auto mr-auto -translate-x-4">Info</h2>
                 </div>
-
-                <div className="bg-white dark:bg-[#1c1c1e] mt-4 border-y border-gray-200 dark:border-white/5 shadow-sm min-h-[50vh]">
-                  <div className="flex border-b border-gray-200 dark:border-white/5">
-                    <button onClick={()=>setProfileTab('media')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='media'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Media</button>
-                    <button onClick={()=>setProfileTab('docs')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='docs'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Docs</button>
-                    <button onClick={()=>setProfileTab('links')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='links'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Links</button>
-                  </div>
-                  
-                  <div className="p-1">
-                    {profileTab === 'media' && (
-                      <div className="grid grid-cols-3 gap-1">
-                        {mediaItems.length === 0 ? <div className="col-span-3 py-10 text-center text-gray-400 text-sm">No media found</div> : mediaItems.map((img, i) => (
-                          <div key={i} className="aspect-square bg-gray-100 dark:bg-gray-800 cursor-pointer overflow-hidden" onClick={() => openModal('image', img.url)}>
-                            <img src={img.url} className="w-full h-full object-cover hover:scale-105 transition-transform" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                  <div className="flex flex-col items-center justify-center pt-8 pb-6 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/5 shadow-sm">
+                    <Avatar name={partnerName} imgUrl={partnerDp} size="lg" colorClass={avatarColor} />
+                    <h2 className="text-2xl font-bold mt-4">{partnerName}</h2>
+                    <p className={`text-sm mt-1 ${statusText==='online'||statusText==='typing...'?'text-blue-500':'text-gray-500'}`}>{statusText}</p>
                     
-                    {profileTab === 'docs' && (
-                      <div className="flex flex-col divide-y divide-gray-100 dark:divide-white/5">
-                         {docItems.length === 0 ? <div className="py-10 text-center text-gray-400 text-sm">No documents found</div> : docItems.map((d, i) => (
-                           <div key={i} className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                             <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-2xl mr-4 shrink-0"><i className="fa-solid fa-file-lines"></i></div>
-                             <div className="flex-1 min-w-0 mr-4">
-                               <div className="font-semibold text-[15px] truncate">{d.doc.name}</div>
-                               <div className="text-xs text-gray-500 flex gap-2 mt-0.5"><span>{formatBytes(d.doc.size)}</span><span>•</span><span>{new Date(d.time).toLocaleDateString()}</span></div>
-                             </div>
-                             <a href={d.doc.data} download={d.doc.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-blue-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i className="fa-solid fa-arrow-down text-sm"></i></a>
-                           </div>
-                         ))}
-                      </div>
-                    )}
+                    <div className="mt-6 w-full px-12">
+                      <button className="w-full flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 py-3 rounded-2xl font-bold transition-colors" onClick={closeCurrentModal}>
+                        <i className="fa-solid fa-comment text-lg"></i> Send Message
+                      </button>
+                    </div>
+                  </div>
 
-                    {profileTab === 'links' && (
-                      <div className="flex flex-col divide-y divide-gray-100 dark:divide-white/5">
-                        {linkItems.length === 0 ? <div className="py-10 text-center text-gray-400 text-sm">No links found</div> : linkItems.map((l, i) => (
-                          <a key={i} href={l.url} target="_blank" className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
-                             <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 mr-4 shrink-0 group-hover:bg-blue-500 group-hover:text-white transition-colors"><i className="fa-solid fa-link"></i></div>
-                             <div className="flex-1 min-w-0">
-                               <div className="font-medium text-[15px] text-blue-500 truncate">{l.url}</div>
-                               <div className="text-xs text-gray-500 mt-0.5">Sent by {l.sender}</div>
+                  <div className="bg-white dark:bg-[#1c1c1e] mt-4 border-y border-gray-200 dark:border-white/5 shadow-sm min-h-[50vh]">
+                    <div className="flex border-b border-gray-200 dark:border-white/5">
+                      <button onClick={()=>setProfileTab('media')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='media'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Media</button>
+                      <button onClick={()=>setProfileTab('docs')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='docs'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Docs</button>
+                      <button onClick={()=>setProfileTab('links')} className={`flex-1 py-3.5 text-sm font-semibold transition-colors border-b-2 ${profileTab==='links'?'border-blue-500 text-blue-500':'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Links</button>
+                    </div>
+                    
+                    <div className="p-1">
+                      {profileTab === 'media' && (
+                        <div className="grid grid-cols-3 gap-1">
+                          {mediaItems.length === 0 ? <div className="col-span-3 py-10 text-center text-gray-400 text-sm">No media found</div> : mediaItems.map((img, i) => (
+                            <div key={i} className="aspect-square bg-gray-100 dark:bg-gray-800 cursor-pointer overflow-hidden" onClick={() => openModal('image', img.url)}>
+                              <img src={img.url} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {profileTab === 'docs' && (
+                        <div className="flex flex-col divide-y divide-gray-100 dark:divide-white/5">
+                           {docItems.length === 0 ? <div className="py-10 text-center text-gray-400 text-sm">No documents found</div> : docItems.map((d, i) => (
+                             <div key={i} className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                               <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-2xl mr-4 shrink-0"><i className="fa-solid fa-file-lines"></i></div>
+                               <div className="flex-1 min-w-0 mr-4">
+                                 <div className="font-semibold text-[15px] truncate">{d.doc.name}</div>
+                                 <div className="text-xs text-gray-500 flex gap-2 mt-0.5"><span>{formatBytes(d.doc.size)}</span><span>•</span><span>{new Date(d.time).toLocaleDateString()}</span></div>
+                               </div>
+                               <a href={d.doc.data} download={d.doc.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-blue-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i className="fa-solid fa-arrow-down text-sm"></i></a>
                              </div>
-                          </a>
-                        ))}
-                      </div>
-                    )}
+                           ))}
+                        </div>
+                      )}
+
+                      {profileTab === 'links' && (
+                        <div className="flex flex-col divide-y divide-gray-100 dark:divide-white/5">
+                          {linkItems.length === 0 ? <div className="py-10 text-center text-gray-400 text-sm">No links found</div> : linkItems.map((l, i) => (
+                            <a key={i} href={l.url} target="_blank" className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                               <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 mr-4 shrink-0 group-hover:bg-blue-500 group-hover:text-white transition-colors"><i className="fa-solid fa-link"></i></div>
+                               <div className="flex-1 min-w-0">
+                                 <div className="font-medium text-[15px] text-blue-500 truncate">{l.url}</div>
+                                 <div className="text-xs text-gray-500 mt-0.5">Sent by {l.sender}</div>
+                               </div>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -782,12 +788,12 @@
           )}
 
           {activeModal === 'settings' && (
-            <div className="absolute inset-0 z-50 bg-black/40 dark:bg-black/60 backdrop-blur-sm flex flex-col justify-end animate-fade-in" onClick={closeCurrentModal}>
-              <div className="bg-[#f8fafc] dark:bg-[#0f1115] w-full rounded-t-[32px] flex flex-col max-h-[90vh] animate-drawer-up shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-gray-200 dark:border-gray-800" onClick={e=>e.stopPropagation()}>
-                <div className="drag-handle"></div>
-                <div className="px-6 pb-2 flex justify-between items-center">
+            <div className="absolute inset-0 z-50 bg-black/40 dark:bg-black/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center animate-fade-in p-0 md:p-6 md:rounded-[32px]" onClick={closeCurrentModal}>
+              <div className="bg-[#f8fafc] dark:bg-[#0f1115] w-full md:w-[440px] rounded-t-[32px] md:rounded-[32px] flex flex-col max-h-[90vh] md:max-h-[85vh] animate-drawer-up md:animate-slide-up shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-2xl border-t md:border border-gray-200 dark:border-gray-800" onClick={e=>e.stopPropagation()}>
+                <div className="drag-handle md:hidden"></div>
+                <div className="px-6 pb-2 md:pt-6 flex justify-between items-center">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h2>
-                  <button onClick={closeCurrentModal} className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400"><i className="fa-solid fa-xmark"></i></button>
+                  <button onClick={closeCurrentModal} className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"><i className="fa-solid fa-xmark"></i></button>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto px-6 pb-8 custom-scrollbar">
@@ -838,7 +844,7 @@
             </div>
           )}
 
-          <header className="absolute top-0 w-full glass-header z-20 px-4 py-2.5 flex items-center justify-between shadow-sm">
+          <header className="absolute top-0 w-full glass-header z-20 px-4 py-2.5 flex items-center justify-between shadow-sm md:rounded-t-[32px]">
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => openModal('profile')}>
               <Avatar name={partnerName} imgUrl={partnerDp} isOnline={partnerStatus.online && Date.now() - partnerStatus.lastActive < 60000} size="md" colorClass={avatarColor} />
               <div className="flex flex-col">
@@ -879,7 +885,7 @@
 
               return (
                 <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} ${isLast ? 'mb-3' : 'mb-[2px]'}`}>
-                  <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[75%] relative group`}>
+                  <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[75%] md:max-w-[60%] relative group`}>
                     
                     <div className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center ${isMe ? 'order-1 pr-1' : 'order-2 pl-1'}`}>
                       <button onClick={(e) => { e.stopPropagation(); setActiveMenu(showMenu ? null : msg.id); }} className="w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"><i className="fa-solid fa-ellipsis-vertical text-sm"></i></button>
@@ -985,7 +991,7 @@
             <div className="h-4"></div>
           </main>
 
-          <footer className="glass-footer shrink-0 px-3 py-2.5 pb-safe z-30" onClick={e=>e.stopPropagation()}>
+          <footer className="glass-footer shrink-0 px-3 py-2.5 pb-safe z-30 md:rounded-b-[32px]" onClick={e=>e.stopPropagation()}>
             
             {(editingMsg || replyingTo) && (
               <div className={`mb-2 px-3 py-2 bg-black/5 dark:bg-white/5 rounded-[18px] flex items-center justify-between animate-slide-up border-l-[3px] ${editingMsg ? 'border-green-500' : 'border-[#0a84ff]'}`}>
@@ -1027,10 +1033,11 @@
                   <button type="button" onClick={() => setShowAttachmentMenu(!showAttachmentMenu)} className={`w-9 h-9 flex items-center justify-center rounded-full transition-all text-blue-500 hover:bg-black/5 dark:hover:bg-white/10`}><i className={`fa-solid fa-plus text-xl transition-transform ${showAttachmentMenu ? 'rotate-45' : ''}`}></i></button>
                   
                   {showAttachmentMenu && (
-                    <div className="absolute bottom-full left-0 mb-3 flex flex-col gap-3 animate-slide-up z-50 bg-white dark:bg-[#1c1c1e] p-2.5 rounded-[24px] shadow-xl border border-gray-100 dark:border-white/5">
+                    <div className="absolute bottom-full left-0 mb-3 flex items-center gap-3 animate-slide-up z-50 bg-white dark:bg-[#1c1c1e] p-3 rounded-[24px] shadow-xl border border-gray-100 dark:border-white/5">
                       <button type="button" onClick={() => { setShowAttachmentMenu(false); camRef.current?.click(); }} className="flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center text-xl mb-1 group-hover:scale-105 transition-transform"><i className="fa-solid fa-camera"></i></div><span className="text-[10px] font-semibold text-gray-500">Camera</span></button>
                       <button type="button" onClick={() => { setShowAttachmentMenu(false); fileRef.current?.click(); }} className="flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center text-xl mb-1 group-hover:scale-105 transition-transform"><i className="fa-regular fa-image"></i></div><span className="text-[10px] font-semibold text-gray-500">Photo</span></button>
-                      <button type="button" onClick={() => { setShowAttachmentMenu(false); docRef.current?.click(); }} className="flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center text-xl mb-1 group-hover:scale-105 transition-transform"><i className="fa-solid fa-file-lines"></i></div><span className="text-[10px] font-semibold text-gray-500">Document</span></button>
+                      <button type="button" onClick={() => { setShowAttachmentMenu(false); docRef.current?.click(); }} className="flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center text-xl mb-1 group-hover:scale-105 transition-transform"><i className="fa-solid fa-file-lines"></i></div><span className="text-[10px] font-semibold text-gray-500">Doc</span></button>
+                      <button type="button" onClick={() => { setShowAttachmentMenu(false); openModal('draw'); }} className="flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-pink-500 text-white flex items-center justify-center text-xl mb-1 group-hover:scale-105 transition-transform"><i className="fa-solid fa-paintbrush"></i></div><span className="text-[10px] font-semibold text-gray-500">Draw</span></button>
                     </div>
                   )}
                 </div>
@@ -1057,7 +1064,7 @@
                       </button>
                       
                       {showEmojis && (
-                        <div className="absolute bottom-14 right-10 shadow-2xl rounded-[24px] p-4 w-[280px] h-[300px] flex flex-col gap-2 z-[70] bg-white dark:bg-[#1c1c1e] border border-gray-100 dark:border-white/5 animate-slide-up">
+                        <div className="absolute bottom-14 right-10 md:right-0 shadow-2xl rounded-[24px] p-4 w-[280px] h-[300px] flex flex-col gap-2 z-[70] bg-white dark:bg-[#1c1c1e] border border-gray-100 dark:border-white/5 animate-slide-up">
                            <div className="grid grid-cols-5 gap-2 overflow-y-auto custom-scrollbar">
                               {EMOJIS.common.map((e, i) => <button key={i} type="button" onClick={() => handleType({target:{value: input + e}})} className="text-3xl p-1 hover:scale-125 transition-transform origin-bottom">{e}</button>)}
                            </div>
